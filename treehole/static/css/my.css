@@ -1,0 +1,21 @@
+.div-bg {
+    background: url('../pic/1.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    height:900px;
+    text-align: center;
+    line-height: 600px;
+}
+.div-bg-blur {
+    float: left;
+    width: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    -webkit-filter: blur(2px);
+    -moz-filter: blur(2px);
+    -o-filter: blur(2px);
+    -ms-filter: blur(2px);
+    filter: blur(2px);
+}

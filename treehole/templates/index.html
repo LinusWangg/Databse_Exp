@@ -1,0 +1,67 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/static/css/my.css">
+        <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+        <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="/static/js/moment-with-locales.js"></script>
+        <script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+        <script type="text/javascript">
+        var user_name = "{{user_name|safe}}";
+        var html_content1 = "";
+        var person_index = ["个人信息","个人帖子管理"];
+        $(function(){
+            $("#at").click(function(){
+                $.ajax({
+                url:"http://127.0.0.1:8000/user/userinfo",
+                type:"post",
+                data:JSON.stringify({
+                    user_name:user_name,
+                }),
+                dataType:"json",
+                success:function(result){
+                    html_content="<p>"+result.data.user_act+"<p>";
+                    document.getElementById("test").innerHTML=html_content;
+                }
+                })
+            })
+        })
+
+        </script>
+    </head>
+    <body>
+        <nav class="navbar navbar-inverse" style="margin-bottom:0px;">
+            <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="http://127.0.0.1:8000">{{title|safe}}</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                {% for cont in content %}
+                <li class="active"><a href={{cont.url|safe}}>{{cont.head|safe}}</a></li>
+                {% endfor %}
+                </ul>
+                <ul class="nav navbar-nav" style="float:right;">
+                {% if user_name == "wywnb" %}
+                <li class="active"><a href="http://127.0.0.1:8000/user/signup_index">登录</a></li>
+                <li class="active"><a href="http://127.0.0.1:8000/user/signin_index">注册</a></li>
+                {% else %}
+                <li class="active"><a id="at" href="javascript:void(0)">{{user_name|safe}}</a></li>
+                <li class="active"><a href="http://127.0.0.1:8000/user/logout">退出</a></li>
+                {% endif %}
+                </ul>
+            </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+        <div id="test"></div>
+    </body>
+</html>
