@@ -18,11 +18,17 @@ from django.urls import path,include
 from . import views
 
 urlpatterns = [
+    path('',views.primary_data,name=""),
+    path('blog',views.primary_data2,name="blog"),
+    path('write',views.primary_data3,name="write"),
     path('writearticle',views.writearticle,name="writearticle"),
     path('getmine',views.getmine,name="getmine"),
     path('getkeyword',views.getkeyword,name="getkeyword"),
-    path('getall',views.getkeyword,name="getall"),
+    path('getall',views.getall,name="getall"),
     path('getsum',views.getsum,name="getsum"),
     path('writecomment',views.writecomment,name="writecomment"),
     path('getcomment',views.getcomment,name="getcomment"),
+    path('getdetail',views.getdetail,name="getdetail"),
+    path('getdate',views.getdate,name="getdate"),
+    path('getauthorart',views.primary_data4,name="getauthorart"),
 ]

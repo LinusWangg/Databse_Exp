@@ -12,9 +12,9 @@ import treehole.settings as settings
 def primary_data1(request):
     data = {}
     data['title'] = '南航树洞'
-    data['content'] = [{'head':'学校热点','url':'#'},
-                    {'head':'校内论坛','url':'#'},
-                    {'head':'圈地自萌','url':'#'},
+    data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
+                    {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
+                    {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
                     {'head':'许愿墙','url':'#'},
                     {'head':'报个BUG','url':'#'}
                     ]
@@ -23,9 +23,9 @@ def primary_data1(request):
 def primary_data2(request):
     data = {}
     data['title'] = '南航树洞'
-    data['content'] = [{'head':'学校热点','url':'#'},
-                    {'head':'校内论坛','url':'#'},
-                    {'head':'圈地自萌','url':'#'},
+    data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
+                    {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
+                    {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
                     {'head':'许愿墙','url':'#'},
                     {'head':'报个BUG','url':'#'}
                     ]
@@ -37,12 +37,12 @@ def logout(request):
 
 def findUserbyact(user_act):
     #user = User.objects.filter(user_act=user_act).first()
-    user = User.objects.raw("select * from user_user where user_act = %s",[user_act])[0]
+    user = User.objects.raw("select * from user_user where user_act = %s",[user_act])
     return user
 
 def findUserbyname(user_name):
     #user = User.objects.filter(user_name=user_name).first()
-    user = User.objects.raw("select * from user_user where user_name = %s",[user_name])[0]
+    user = User.objects.raw("select * from user_user where user_name = %s",[user_name])
     return user
 
 def findUser(user_act,user_pwd):
@@ -55,10 +55,13 @@ def userinfo(request):
     post_data = request.body.decode("utf-8")
     post_data = json.loads(post_data)
     user_name = post_data.get('user_name')
-    user = findUserbyname(user_name)
+    user = findUserbyname(user_name)[0]
     data['user_act'] = user.user_act
     data['user_name'] = user.user_name
-    data['user_avatar'] = user.user_avatar
+    if(user.user_avatar):
+        data['user_avatar'] = user.user_avatar
+    else:
+        data['user_avatar'] = "http://127.0.0.1:8000/media/avatar/2.jpg"
     data['user_birth'] = user.user_birth
     response=wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success')
     return JsonResponse(data=response,safe=False)

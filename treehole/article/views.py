@@ -13,10 +13,83 @@ from hashlib import md5
 import os
 import treehole.settings as settings
 import datetime
+from user import views as usr_view
 # Create your views here.
+def primary_data(request):
+    data = {}
+    if(request.session.get('is_login',None)):
+        data['user_name'] = request.session['user_name']
+    else:
+        data['user_name'] = 'wywnb'
+    data['title'] = '南航树洞'
+    data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
+                    {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
+                    {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
+                    {'head':'许愿墙','url':'#'},
+                    {'head':'报个BUG','url':'#'}
+                    ]
+    return render(request,'blog_all.html',data)
+
+def primary_data2(request):
+    data = {}
+    if(request.session.get('is_login',None)):
+        data['user_name'] = request.session['user_name']
+    else:
+        data['user_name'] = 'wywnb'
+    data['title'] = '南航树洞'
+    data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
+                    {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
+                    {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
+                    {'head':'许愿墙','url':'#'},
+                    {'head':'报个BUG','url':'#'}
+                    ]
+    data['type'] = [{'type':'动画','url':'http://127.0.0.1:8000/article/blog/#','index':'2'},
+                    {'type':'游戏','url':'http://127.0.0.1:8000/article/blog/#','index':'1'},
+                    {'type':'生活','url':'http://127.0.0.1:8000/article/blog/#','index':'28'},
+                    {'type':'影视','url':'http://127.0.0.1:8000/article/blog/#','index':'3'},
+                    {'type':'科技','url':'http://127.0.0.1:8000/article/blog/#','index':'17'},
+                    {'type':'笔记','url':'http://127.0.0.1:8000/article/blog/#','index':'41'},
+                    {'type':'小说','url':'http://127.0.0.1:8000/article/blog/#','index':'16'},]
+    return render(request,'blog.html',data)
+
+def primary_data3(request):
+    data = {}
+    if(request.session.get('is_login',None)):
+        data['user_name'] = request.session['user_name']
+    else:
+        data['user_name'] = 'wywnb'
+    data['title'] = '南航树洞'
+    data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
+                    {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
+                    {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
+                    {'head':'许愿墙','url':'#'},
+                    {'head':'报个BUG','url':'#'}
+                    ]
+    return render(request,'write_blog.html',data)
+
+def primary_data4(request):
+    data = {}
+    if(request.session.get('is_login',None)):
+        data['user_name'] = request.session['user_name']
+    else:
+        data['user_name'] = 'wywnb'
+    data['title'] = '南航树洞'
+    data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
+                    {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
+                    {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
+                    {'head':'许愿墙','url':'#'},
+                    {'head':'报个BUG','url':'#'}
+                    ]
+    return render(request,'myart.html',data)
+
 def findbyarttitle(art_title):
     Art = Article.objects.raw("select * from article_article where art_title = %s",[art_title])
-    return Art
+    if not Art:
+        return None
+    Art = serializers.serialize("json",Art)
+    Art = json.loads(Art)[0]
+    Art['fields']['art_title'] = Art['pk']
+    return Art['fields']
 
 def findbyauthor(art_author):
     Art = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_author = %s",[art_author])
@@ -37,7 +110,7 @@ def writearticle(request):
     data = {}
     post_data = request.body.decode("utf-8")
     post_data = json.loads(post_data)
-    user_name = post_data.get('user_name')
+    user_name = post_data.get('art_author')
     art_title = post_data.get('art_title')
     if(findbyarttitle(art_title)):
         data['Exist'] = True
@@ -90,7 +163,7 @@ def getkeyword(request):
     page = post_data.get('page')
     Arts = []
     page_from = 10*(page-1)
-    page_to = 10*page-1
+    page_to = 10*page
     # 分页
     arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_title like %s limit %s,%s",[key_word,page_from,page_to])
     print(arts)
@@ -113,7 +186,7 @@ def getmine(request):
     Arts = []
     i = 0
     page_from = 10*(page-1)
-    page_to = 10*page-1
+    page_to = 10*page
     # 分页
     arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_author = %s limit %s,%s",[art_author,page_from,page_to])
     arts = serializers.serialize("json",arts)
@@ -134,7 +207,7 @@ def getall(request):
     page = post_data.get('page')
     Arts = []
     page_from = 10*(page-1)
-    page_to = 10*page-1
+    page_to = 10*page
     # 分页
     arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article limit %s,%s",[page_from,page_to])
     arts = serializers.serialize("json",arts)
@@ -159,7 +232,7 @@ def getsum(request):
     page = post_data.get('page')
     Art_info_author = []
     page_from = 10*(page-1)
-    page_to = 10*page-1
+    page_to = 10*page
     cur = connection.cursor()
     cur.execute("select art_author,count(*) from article_article group by art_author limit %s,%s",[page_from,page_to])
     Art_info_author = dictfetchall(cur)
@@ -176,7 +249,7 @@ def getdate(request):
     page = post_data.get('page')
     Art_time = []
     page_from = 10*(page-1)
-    page_to = 10*page-1
+    page_to = 10*page
     time_from = post_data.get('time_from')
     time_to = post_data.get('time_to')
     arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_time between %s and %s limit %s,%s",[time_from,time_to,page_from,page_to])
@@ -196,6 +269,8 @@ def getdetail(request):
     art_title = post_data.get('art_title')
     Article = findbyarttitle(art_title)
     data['Arts'] = Article
+    user = usr_view.findUserbyname(Article['art_author'])[0]
+    data['author_avatar'] = user.user_avatar
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)
 
@@ -234,7 +309,8 @@ def getcomment(request):
             temp_comments[x['commentor']]['comment_content'] = x['comment_content']
             temp_comments[x['commentor']]['comment_time'] = x['comment_time']
             temp_comments[x['commentor']]['comment_list'] = {}
-        
+    
+    
     data['comments'] = comments
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)

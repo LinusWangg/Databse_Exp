@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="/static/css/my.css">
+    <link href="//s1.hdslb.com/bfs/static/jinkela/article/pcDetail.f935050c97d76816ce4b37005c77a7802d50cd86.css" rel="stylesheet">
+    <link rel="stylesheet" href="//s1.hdslb.com/bfs/static/jinkela/video/css/stardust-video.0.6e342487159cd3ec4dc73648bb29483e4dfce262.css">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+  <style>
+      .el-menu-vertical-demo:not(.el-menu--collapse) {
+    width: 200px;
+    min-height: 400px;
+  }
+  .bg-purple-dark {
+    background: #FFFFFF;
+  }
+  .grid-content {
+    border-radius: 4px;
+    min-height: 36px;
+  }
+
+  </style>
+  <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script>
+  <!-- import Vue before Element -->
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    var user_name = "{{user_name|safe}}";
+    var page = 1;
+    var html = "";
+    var comment;
+    function getQueryString(name) {
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if(r!=null)return  decodeURI(r[2]); return null;
+    }
+    window.onload = function(){
+      new Vue({
+        el:'#app',
+        data:{
+            Art:"",
+            author_avatar:""
+        },
+        mounted(){
+          this.$nextTick(()=>{
+            var that=this;
+            $.ajax({
+                url:"http://127.0.0.1:8000/article/getdetail",
+                type:"post",
+                data:JSON.stringify({
+                    art_title:getQueryString("title")
+                }),
+                dataType:"json",
+                success:function(result){
+                    that.Art = result['data']['Arts'];
+                    that.user_avatar = result['data']['author_avatar'];
+                    document.getElementById('content').innerHTML = marked(result['data']['Arts']['art_content']);
+                }
+            })
+            $.ajax({
+                url:"http://127.0.0.1:8000/article/getcomment",
+                type:"post",
+                data:JSON.stringify({
+                    art_title:"wywnb",
+                }),
+                dataType:"json",
+                success:function(result){
+                    comment = result['data']['comments'];
+                    that.showcomment(comment,0);
+                    document.getElementById("cot").innerHTML = html
+                }
+            })
+          })
+        },
+        methods:{
+          showcomment(temp,level){
+            if(temp==null)
+              return;
+            var jsonObj = Object.keys(temp);
+            for(var user in jsonObj){
+              if(level == 0){
+                html += "<div class='list-item reply-wrap'>"+
+                  "<div class='user-face'>"+
+                  "<div class='bill-avatar'>"+
+                  "<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+
+                  "</div></div>"+
+                  "<div class='con'>"+
+                  "<div class='user'>"+
+                  "<a class='name' :href='/article/getauthorart?user_name='"+jsonObj[user]+"'>"+jsonObj[user]+"</a>"+
+                  "</div>"+
+                  "<p class='text'>"+temp[jsonObj[user]]['comment_content']+
+                  "</div></div>";
+              }
+              else{
+                html += "<div class='reply-item reply-wrap'>"+
+                  "<a class='reply-face' style='top: 0px;' :href='/article/getauthorart?user_name='"+jsonObj[user]+"'>"+
+                  "<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+"</a>"+
+                  "<div class='reply-con'>"+
+                  "<div class='user'>"+
+                  "<a class='name' :href='/article/getauthorart?user_name='"+jsonObj[user]+"'>"+jsonObj[user]+"</a>"+
+                  "<span class='text-con'>"+temp[jsonObj[user]]['comment_content']+
+                  "</div>"+
+                  "</div></div>";
+              }
+              this.showcomment(temp[jsonObj[user]]['comment_list'],level+1);
+            }
+          }
+        },
+        delimiters:['${', '}']
+      })
+    }
+  </script>
+</head>
+<body>
+    <el-container id="app">
+      <el-aside width="210px">
+        <el-menu class="el-menu-vertical-demo" :collapse="false">
+            {% if user_name == "wywnb" %}
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signup_index">登录</a></span></el-menu-item>
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signin_index">注册</a></span></el-menu-item>
+            {% else %}
+            <el-menu-item><span>{{user_name|safe}}</span></el-menu-item>
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/logout">退出</a></span></el-menu-item>
+            {% endif %}
+            {% for cont in content %}
+            <el-menu-item>
+                <template #title>
+                  <i class="el-icon-location"></i>
+                  <span><a href={{cont.url|safe}}>{{cont.head|safe}}</a></span>
+                </template>
+            </el-menu-item>
+            {% endfor %}
+      </el-aside>
+      <el-main>
+        <div class="page-container">
+            <div class="nav-tab-bar">
+              {% for type in type %}
+                <a href={{type.url}} target="_self" class="tab-item" data-tab-id={{type.index}}>
+                  <span>{{type.type}}</span>
+                </a>
+              {% endfor %}
+              
+            </div>
+            <div class="up-info-holder">
+              <div class="fixed-box">
+                <div class="up-info-block">
+                  <a class="up-face-holder " href="//space.bilibili.com/615750461" target="_blank">
+                    <img class="up-face-image" data-face-src="author_avatar" src="author_avatar">
+                    
+                    
+                    
+                    
+        
+                  </a>
+                  <div class="up-info-right-block">
+                    <div class="row">
+                      <a class="up-name b-vip-red" href="//space.bilibili.com/615750461" target="_blank" style="color: #FB7299;">
+                        ${Art.art_author}
+                      </a>
+                      
+                      <div class="nameplate-holder">
+                        <i class="nameplate"></i>
+                      </div>
+                    </div>
+                    <div class="row-2">
+                      粉丝:
+                      <span class="fans-num">6114</span>
+                      <span class="view">阅读:</span>
+                      <span class="view-num">2.1万</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="follow-btn-holder  ">
+                  <span class="follow-btn">关注</span>
+                </div>
+                <div class="up-article-list-block report-wrap-module" id="readRecommendInfo">
+                  <div class="block-title">
+                    推荐文章
+                  </div>
+                </div>
+                <div class="more">
+                  <div class="top-bar">
+                    <label>更多</label>
+                  </div>
+                  <a class="ac-link" href="http://member.bilibili.com/v/#/text-edit" target="_blank">
+                    <div class="link">
+                      <span class="icon">
+                      </span>
+                      <p class="title">专栏投稿</p>
+                      <p class="info">前去写文章</p>
+                    </div>
+                  </a>
+                  <a href="//www.bilibili.com/blackboard/help.html#专栏相关" target="_blank">
+                    <div class="help">
+                      <span class="icon">
+                      </span>
+                      <p class="title">专栏帮助</p>
+                      <p class="info">查看专栏使用说明</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="right-side-bar">
+              <div class="to-comment" v-on:click="showcomment('${comment}',0)">
+                <div class="comment-num-holder">
+                  <span class="comment-num">71</span>
+                </div>
+              </div>
+              <div class="to-top"></div>
+            </div>
+            <div class="head-container">
+                
+                
+                    <div class="bangumi-rating-container"></div>
+                
+                <div class="argue-flag hidden"></div>
+                <div class="title-container">
+                    <h1 class="title">${Art.art_title}</h1>
+                    <div class="info">
+                        <a class="category-link" href="//www.bilibili.com/read/life#rid=15" target="_blank"><span>
+                            ${Art.art_type}
+                          </span></a>
+                        <span class="create-time" data-ts="1619946067">${Art.art_time}</span>
+                        <div class="article-data"><span>3053阅读</span><span>435点赞</span><span>71评论</span></div>
+                    </div>
+                </div>
+        
+                
+                <div style="display:none" class="author-container">
+                    <a class="author-face" href="//space.bilibili.com/615750461" target="_blank">
+                        <img data-face-src="//i2.hdslb.com/bfs/face/310e447537418aeb58204a37c0e04d87ebf5d578.jpg" src="//i2.hdslb.com/bfs/face/310e447537418aeb58204a37c0e04d87ebf5d578.jpg" class="author-face-img">
+                        
+                        
+                        
+                    </a>
+                    <a class="author-name" href="//space.bilibili.com/615750461" target="_blank">${Art.art_author}</a>
+                  <div class="attention-btn slim-border">关注</div>
+                </div>
+            </div>
+        
+            <div id="content" class="article-holder">
+            </div>
+            <div class="b-head comment-title-block">
+              <span class="b-head-t">评论</span>
+            </div>
+            <div class="comment-holder" style="position: relative;">
+                <div class="bb-comment ">
+                    <div class="reply-notice">
+                    </div>
+                    <div class="comment-list">
+                      <div id="cot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </el-main>
+    </el-container>
+</body>
+  
+</html>
