@@ -279,7 +279,7 @@ def getcomment(request):
     post_data = request.body.decode("utf-8")
     post_data = json.loads(post_data)
     art_title = post_data.get('art_title')
-    comment = Comment.objects.raw("select * from article_comment where art_title = %s order by commentwho",[art_title])
+    comment = Comment.objects.raw("select * from article_comment where art_title = '{0}' order by commentwho".format(art_title))
     comment = serializers.serialize("json",comment)
     comment = json.loads(comment)
     comment_temp = []
@@ -293,6 +293,7 @@ def getcomment(request):
             comments[x['commentor']]['comment_content'] = x['comment_content']
             comments[x['commentor']]['comment_time'] = x['comment_time']
             comments[x['commentor']]['comment_list'] = {}
+            comments[x['commentor']]['comment_id'] = x['comment_id']
         else:
             temp_s = []
             temp_comments = comments
@@ -309,6 +310,7 @@ def getcomment(request):
             temp_comments[x['commentor']]['comment_content'] = x['comment_content']
             temp_comments[x['commentor']]['comment_time'] = x['comment_time']
             temp_comments[x['commentor']]['comment_list'] = {}
+            temp_comments[x['commentor']]['comment_id'] = x['comment_id']
     
     
     data['comments'] = comments

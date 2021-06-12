@@ -65,7 +65,7 @@
                 url:"http://127.0.0.1:8000/article/getcomment",
                 type:"post",
                 data:JSON.stringify({
-                    art_title:"wywnb",
+                  art_title:getQueryString("title"),
                 }),
                 dataType:"json",
                 success:function(result){
@@ -77,7 +77,17 @@
           })
         },
         methods:{
+          showmd:function(comment_id){
+            
+          },
+          writecomment(comment_id){
+
+          },
           showcomment(temp,level){
+            str = "";
+            for(var i=0;i<level-1;i++){
+              str+="&nbsp&nbsp&nbsp&nbsp";
+            }
             if(temp==null)
               return;
             var jsonObj = Object.keys(temp);
@@ -86,27 +96,42 @@
                 html += "<div class='list-item reply-wrap'>"+
                   "<div class='user-face'>"+
                   "<div class='bill-avatar'>"+
-                  "<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+
+                  //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+
                   "</div></div>"+
-                  "<div class='con'>"+
+                  "<div class='con '>"+
                   "<div class='user'>"+
-                  "<a class='name' :href='/article/getauthorart?user_name='"+jsonObj[user]+"'>"+jsonObj[user]+"</a>"+
+                  "<a class='name' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+jsonObj[user]+"</a>"+
+                  '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
                   "</div>"+
                   "<p class='text'>"+temp[jsonObj[user]]['comment_content']+
-                  "</div></div>";
+                  "<div class='info'>"+
+                  "<span class='time'>"+temp[jsonObj[user]]['comment_time']+
+                  "</span>"+
+                  "<a class='reply btn-hover btn-highlight' v-on:click='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
+                  "</div>"
+                  ;
               }
               else{
-                html += "<div class='reply-item reply-wrap'>"+
-                  "<a class='reply-face' style='top: 0px;' :href='/article/getauthorart?user_name='"+jsonObj[user]+"'>"+
-                  "<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+"</a>"+
+                html += "<div class='reply-box'>"+
+                  "<div class='reply-item reply-wrap'>"+
+                  "<a class='reply-face' style='top: 0px;' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+
+                  //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+"</a>"+
                   "<div class='reply-con'>"+
                   "<div class='user'>"+
-                  "<a class='name' :href='/article/getauthorart?user_name='"+jsonObj[user]+"'>"+jsonObj[user]+"</a>"+
+                  "<a class='name' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+str+jsonObj[user]+"</a>"+
+                  '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
                   "<span class='text-con'>"+temp[jsonObj[user]]['comment_content']+
+                  "</div></div>"+
+                  "<div class='info'>"+
+                  "<span class='time'>"+str+temp[jsonObj[user]]['comment_time']+
+                  "</span>"+
+                  "<a class='reply btn-hover btn-highlight' v-on:click='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
                   "</div>"+
                   "</div></div>";
               }
               this.showcomment(temp[jsonObj[user]]['comment_list'],level+1);
+              if(level==0)
+                html+="</div></div>";
             }
           }
         },
