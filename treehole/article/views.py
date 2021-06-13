@@ -1,4 +1,4 @@
-from django.db.models.fields import PositiveBigIntegerField
+#from django.db.models.fields import PositiveBigIntegerField
 from django.shortcuts import redirect, render
 from django.db import connection
 from django.core import serializers
@@ -151,6 +151,7 @@ def writecomment(request):
     )
     cur = connection.cursor()
     data['success'] = cur.execute(sql)
+    data['success'] = True
     cur.close()
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)
@@ -289,11 +290,12 @@ def getcomment(request):
     comments = {}
     for x in comment_temp:
         if(x['commentwho']==0):
-            comments[x['commentor']] = {}
-            comments[x['commentor']]['comment_content'] = x['comment_content']
-            comments[x['commentor']]['comment_time'] = x['comment_time']
-            comments[x['commentor']]['comment_list'] = {}
-            comments[x['commentor']]['comment_id'] = x['comment_id']
+            comments[x['comment_id']] = {}
+            comments[x['comment_id']]['commentor'] = x['commentor']
+            comments[x['comment_id']]['comment_content'] = x['comment_content']
+            comments[x['comment_id']]['comment_time'] = x['comment_time']
+            comments[x['comment_id']]['comment_list'] = {}
+            comments[x['comment_id']]['comment_id'] = x['comment_id']
         else:
             temp_s = []
             temp_comments = comments
@@ -301,16 +303,18 @@ def getcomment(request):
             while temp:
                 temp = serializers.serialize("json",temp)
                 temp = json.loads(temp)
+                temp[0]['fields']['comment_id'] = temp[0]['pk']
                 temp = temp[0]['fields']
-                temp_s.append(temp['commentor'])
+                temp_s.append(temp['comment_id'])
                 temp = Comment.objects.raw("select * from article_comment where comment_id = %s",[temp['commentwho']])
             while len(temp_s)>0:
                 temp_comments = temp_comments[temp_s.pop()]['comment_list']
-            temp_comments[x['commentor']] = {}
-            temp_comments[x['commentor']]['comment_content'] = x['comment_content']
-            temp_comments[x['commentor']]['comment_time'] = x['comment_time']
-            temp_comments[x['commentor']]['comment_list'] = {}
-            temp_comments[x['commentor']]['comment_id'] = x['comment_id']
+            temp_comments[x['comment_id']] = {}
+            temp_comments[x['comment_id']]['commentor'] = x['commentor']
+            temp_comments[x['comment_id']]['comment_content'] = x['comment_content']
+            temp_comments[x['comment_id']]['comment_time'] = x['comment_time']
+            temp_comments[x['comment_id']]['comment_list'] = {}
+            temp_comments[x['comment_id']]['comment_id'] = x['comment_id']
     
     
     data['comments'] = comments

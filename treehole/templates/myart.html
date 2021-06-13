@@ -67,6 +67,32 @@
             })
           })
         },
+        methods:{
+            submit(val){
+                var that = this;
+                var find = null;
+                find = getQueryString("user_name");
+                if(find == null){
+                    find = "{{user_name|safe}}";
+                }
+                $.ajax({
+                url:"http://127.0.0.1:8000/article/getmine",
+                type:"post",
+                data:JSON.stringify({
+                    user_name:find,
+                    page:val,
+                }),
+                dataType:"json",
+                success:function(result){
+                    that.Arts = result['data']['Arts'];
+                }
+                })
+            },
+            Pagechange(val){
+                var that = this;
+                that.submit(val);
+            }
+        },
         delimiters:['${', '}']
       })
     }
@@ -146,8 +172,10 @@
             </ul>
         </div>
         <el-pagination
-    layout="prev, pager, next"
-    :total="1000">
+        background
+        layout="pager"
+        :total="1000"
+        @current-change="Pagechange">
         </el-pagination>
       </el-main>
     </el-container>

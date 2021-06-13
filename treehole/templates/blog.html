@@ -29,10 +29,140 @@
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
+    var html;
+    function showcomment(temp,level){
+      if(temp==null)
+        return;
+      var jsonObj = Object.keys(temp);
+      for(var user in jsonObj){
+        if(level == 0){
+          html += "<div class='list-item reply-wrap'>"+
+            "<div class='user-face'>"+
+            "<div class='bill-avatar'>"+
+            //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+
+            "</div></div>"+
+            "<div class='con '>"+
+            "<div class='user'>"+
+            "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+temp[jsonObj[user]]['commentor']+"</a>"+
+            '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
+            "</div>"+
+            "<p class='text'>"+temp[jsonObj[user]]['comment_content']+
+            "<div class='info'>"+
+            "<span class='time'>"+temp[jsonObj[user]]['comment_time']+
+            "</span>"+
+            "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
+            "</div>"
+            ;
+        }
+        else{
+          html += "<div class='reply-box'>"+
+            "<div class='reply-item reply-wrap'>"+
+            "<a class='reply-face' style='top: 0px;' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+
+            //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+"</a>"+
+            "<div class='reply-con'>"+
+            "<div class='user'>"+
+            "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+str+temp[jsonObj[user]]['commentor']+"</a>"+
+            '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
+            "<span class='text-con'>"+temp[jsonObj[user]]['comment_content']+
+            "</div></div>"+
+            "<div class='info'>"+
+            "<span class='time'>"+str+temp[jsonObj[user]]['comment_time']+
+            "</span>"+
+            "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
+            "</div>"+
+            "</div></div>";
+        }
+        if(level>=1)
+          str+="&nbsp&nbsp&nbsp&nbsp";
+        this.showcomment(temp[jsonObj[user]]['comment_list'],level+1);
+        if(level>=1)
+          str=str.slice(20);
+        if(level==0)
+          html+="</div></div>";
+      }
+    }
+    function refresh_comment(){
+      $.ajax({
+        url:"http://127.0.0.1:8000/article/getcomment",
+        type:"post",
+        data:JSON.stringify({
+          art_title:getQueryString("title"),
+        }),
+        dataType:"json",
+        success:function(result){
+            html = "";
+            comment = result['data']['comments'];
+            showcomment(comment,0);
+            document.getElementById("cot").innerHTML = html
+        }
+      })
+    }
+    function showmd(comment_id){
+      var user_name = "{{user_name|safe}}";
+      var cont=prompt("请输入评论内容","");
+      if(cont!=null && cont!=""){
+        $.ajax({
+          url:"http://127.0.0.1:8000/article/writecomment",
+          type:"post",
+          data:JSON.stringify({
+            art_title:getQueryString("title"),
+            user_name:user_name,
+            comment_id:comment_id,
+            comment_content:cont
+          }),
+          dataType:"json",
+          success:function(result){
+            if(result['data']['success']){
+              alert("评论成功");
+              refresh_comment();
+            }
+            else{
+              alert("评论失败");
+            }
+          }
+      })
+      }
+      else{
+        alert("请注意评论格式");
+      }
+    }
+    function comt_dir(){
+      var user_name = "{{user_name|safe}}";
+      var cont=document.getElementById("comt").value;
+      if(cont!=null && cont!=""){
+        $.ajax({
+          url:"http://127.0.0.1:8000/article/writecomment",
+          type:"post",
+          data:JSON.stringify({
+            art_title:getQueryString("title"),
+            user_name:user_name,
+            comment_id:0,
+            comment_content:cont
+          }),
+          dataType:"json",
+          success:function(result){
+            if(result['data']['success']){
+              alert("评论成功");
+              document.getElementById("comt").value="";
+              refresh_comment();
+            }
+            else{
+              alert("评论失败");
+            }
+          }
+      })
+      }
+      else{
+        alert("请注意评论格式");
+      }
+    }
+  </script>
+  <script>
     var user_name = "{{user_name|safe}}";
     var page = 1;
     var html = "";
     var comment;
+    var str=""
     function getQueryString(name) {
     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
     var r = window.location.search.substr(1).match(reg);
@@ -77,17 +207,7 @@
           })
         },
         methods:{
-          showmd:function(comment_id){
-            
-          },
-          writecomment(comment_id){
-
-          },
           showcomment(temp,level){
-            str = "";
-            for(var i=0;i<level-1;i++){
-              str+="&nbsp&nbsp&nbsp&nbsp";
-            }
             if(temp==null)
               return;
             var jsonObj = Object.keys(temp);
@@ -100,14 +220,14 @@
                   "</div></div>"+
                   "<div class='con '>"+
                   "<div class='user'>"+
-                  "<a class='name' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+jsonObj[user]+"</a>"+
+                  "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+temp[jsonObj[user]]['commentor']+"</a>"+
                   '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
                   "</div>"+
                   "<p class='text'>"+temp[jsonObj[user]]['comment_content']+
                   "<div class='info'>"+
                   "<span class='time'>"+temp[jsonObj[user]]['comment_time']+
                   "</span>"+
-                  "<a class='reply btn-hover btn-highlight' v-on:click='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
+                  "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
                   "</div>"
                   ;
               }
@@ -118,22 +238,26 @@
                   //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+"</a>"+
                   "<div class='reply-con'>"+
                   "<div class='user'>"+
-                  "<a class='name' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+str+jsonObj[user]+"</a>"+
+                  "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+str+temp[jsonObj[user]]['commentor']+"</a>"+
                   '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
                   "<span class='text-con'>"+temp[jsonObj[user]]['comment_content']+
                   "</div></div>"+
                   "<div class='info'>"+
                   "<span class='time'>"+str+temp[jsonObj[user]]['comment_time']+
                   "</span>"+
-                  "<a class='reply btn-hover btn-highlight' v-on:click='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
+                  "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
                   "</div>"+
                   "</div></div>";
               }
+              if(level>=1)
+                str+="&nbsp&nbsp&nbsp&nbsp";
               this.showcomment(temp[jsonObj[user]]['comment_list'],level+1);
+              if(level>=1)
+                str=str.slice(20);
               if(level==0)
                 html+="</div></div>";
             }
-          }
+          },
         },
         delimiters:['${', '}']
       })
@@ -276,6 +400,15 @@
             <div class="comment-holder" style="position: relative;">
                 <div class="bb-comment ">
                     <div class="reply-notice">
+                    </div>
+                    <div class="comment-send ">
+                      <div class="user-face">
+                        <img class="user-head" src="//i1.hdslb.com/bfs/face/3ba887be52a30058cbe016543fe7f1de319361bb.jpg@52w_52h.webp"></div>
+                        <div class="textarea-container">
+                          <i class="ipt-arrow"></i>
+                          <textarea id="comt" cols="80" name="msg" rows="5" placeholder="发一条友善的评论" class="ipt-txt"></textarea>
+                          <button type="submit" class="comment-submit" onclick="comt_dir()">发表评论</button>
+                        </div>
                     </div>
                     <div class="comment-list">
                       <div id="cot"></div>
