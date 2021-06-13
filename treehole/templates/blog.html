@@ -31,55 +31,55 @@
   <script>
     var html;
     function showcomment(temp,level){
-      if(temp==null)
-        return;
-      var jsonObj = Object.keys(temp);
-      for(var user in jsonObj){
-        if(level == 0){
-          html += "<div class='list-item reply-wrap'>"+
-            "<div class='user-face'>"+
-            "<div class='bill-avatar'>"+
-            //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+
-            "</div></div>"+
-            "<div class='con '>"+
-            "<div class='user'>"+
-            "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+temp[jsonObj[user]]['commentor']+"</a>"+
-            '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
-            "</div>"+
-            "<p class='text'>"+temp[jsonObj[user]]['comment_content']+
-            "<div class='info'>"+
-            "<span class='time'>"+temp[jsonObj[user]]['comment_time']+
-            "</span>"+
-            "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
-            "</div>"
-            ;
-        }
-        else{
-          html += "<div class='reply-box'>"+
-            "<div class='reply-item reply-wrap'>"+
-            "<a class='reply-face' style='top: 0px;' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+
-            //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+"</a>"+
-            "<div class='reply-con'>"+
-            "<div class='user'>"+
-            "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+str+temp[jsonObj[user]]['commentor']+"</a>"+
-            '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
-            "<span class='text-con'>"+temp[jsonObj[user]]['comment_content']+
-            "</div></div>"+
-            "<div class='info'>"+
-            "<span class='time'>"+str+temp[jsonObj[user]]['comment_time']+
-            "</span>"+
-            "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
-            "</div>"+
-            "</div></div>";
-        }
-        if(level>=1)
-          str+="&nbsp&nbsp&nbsp&nbsp";
-        this.showcomment(temp[jsonObj[user]]['comment_list'],level+1);
-        if(level>=1)
-          str=str.slice(20);
-        if(level==0)
-          html+="</div></div>";
-      }
+          if(temp==null)
+            return;
+          var jsonObj = Object.keys(temp);
+          for(var user in jsonObj){
+            if(level == 0){
+              html += "<div class='list-item reply-wrap'>"+
+                "<div class='user-face'>"+
+                "<div class='bill-avatar'>"+
+                "<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src='"+temp[jsonObj[user]]['commentor_avatar']+"'>"+
+                "</div></div>"+
+                "<div class='con '>"+
+                "<div class='user'>"+
+                "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+temp[jsonObj[user]]['commentor']+"</a>"+
+                '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
+                "</div>"+
+                "<p class='text'>"+temp[jsonObj[user]]['comment_content']+
+                "<div class='info'>"+
+                "<span class='time'>"+temp[jsonObj[user]]['comment_time']+
+                "</span>"+
+                "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
+                "</div>"
+                ;
+            }
+            else{
+              html += "<div class='reply-box'"+" style='margin-left:"+ str +"px'"+">"+
+                "<div class='reply-item reply-wrap'>"+
+                "<a class='reply-face' style='top: 0px;' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+
+                "<img src='"+temp[jsonObj[user]]['commentor_avatar']+"'>"+"</a>"+
+                "<div class='reply-con'>"+
+                "<div class='user'>"+
+                "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+temp[jsonObj[user]]['commentor']+"</a>"+
+                '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
+                "<span class='text-con'>"+temp[jsonObj[user]]['comment_content']+
+                "</div></div>"+
+                "<div class='info'>"+
+                "<span class='time'>"+temp[jsonObj[user]]['comment_time']+
+                "</span>"+
+                "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
+                "</div>"+
+                "</div></div>";
+            }
+            if(level>=1)
+              str+=20;
+            this.showcomment(temp[jsonObj[user]]['comment_list'],level+1);
+            if(level>=1)
+              str-=20;
+            if(level==0)
+              html+="</div></div>";
+          }
     }
     function refresh_comment(){
       $.ajax({
@@ -162,7 +162,7 @@
     var page = 1;
     var html = "";
     var comment;
-    var str=""
+    var str=0;
     function getQueryString(name) {
     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
     var r = window.location.search.substr(1).match(reg);
@@ -173,7 +173,8 @@
         el:'#app',
         data:{
             Art:"",
-            author_avatar:""
+            author_avatar:"",
+            user_avatar:""
         },
         mounted(){
           this.$nextTick(()=>{
@@ -189,6 +190,17 @@
                     that.Art = result['data']['Arts'];
                     that.user_avatar = result['data']['author_avatar'];
                     document.getElementById('content').innerHTML = marked(result['data']['Arts']['art_content']);
+                    $.ajax({
+                      url:"http://127.0.0.1:8000/user/userinfo",
+                      type:"post",
+                      data:JSON.stringify({
+                        user_name:that.Art['art_author']
+                      }),
+                      dataType:"json",
+                      success:function(result){
+                        that.author_avatar = result['data']['user_avatar'];
+                      }
+                    })
                 }
             })
             $.ajax({
@@ -204,6 +216,17 @@
                     document.getElementById("cot").innerHTML = html
                 }
             })
+            $.ajax({
+                url:"http://127.0.0.1:8000/user/userinfo",
+                type:"post",
+                data:JSON.stringify({
+                  user_name:"{{user_name|safe}}"
+                }),
+                dataType:"json",
+                success:function(result){
+                  that.user_avatar = result['data']['user_avatar'];
+                }
+            })
           })
         },
         methods:{
@@ -216,7 +239,7 @@
                 html += "<div class='list-item reply-wrap'>"+
                   "<div class='user-face'>"+
                   "<div class='bill-avatar'>"+
-                  //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+
+                  "<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src='"+temp[jsonObj[user]]['commentor_avatar']+"'>"+
                   "</div></div>"+
                   "<div class='con '>"+
                   "<div class='user'>"+
@@ -232,28 +255,28 @@
                   ;
               }
               else{
-                html += "<div class='reply-box'>"+
+                html += "<div class='reply-box'"+" style='margin-left:"+ str +"px'"+">"+
                   "<div class='reply-item reply-wrap'>"+
                   "<a class='reply-face' style='top: 0px;' href='/article/getauthorart?user_name="+jsonObj[user]+"'>"+
-                  //"<img class='bili-avatar-img bili-avatar-face bili-avatar-img-radius' src="+""+">"+"</a>"+
+                  "<img src='"+temp[jsonObj[user]]['commentor_avatar']+"'>"+"</a>"+
                   "<div class='reply-con'>"+
                   "<div class='user'>"+
-                  "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+str+temp[jsonObj[user]]['commentor']+"</a>"+
+                  "<a class='name' href='/article/getauthorart?user_name="+temp[jsonObj[user]]['commentor']+"'>"+temp[jsonObj[user]]['commentor']+"</a>"+
                   '<a class="level-link" target="_blank"><i class="level l4"></i></a>'+
                   "<span class='text-con'>"+temp[jsonObj[user]]['comment_content']+
                   "</div></div>"+
                   "<div class='info'>"+
-                  "<span class='time'>"+str+temp[jsonObj[user]]['comment_time']+
+                  "<span class='time'>"+temp[jsonObj[user]]['comment_time']+
                   "</span>"+
                   "<a class='reply btn-hover btn-highlight' onclick='showmd("+temp[jsonObj[user]]['comment_id']+")'>回复</a>"+
                   "</div>"+
                   "</div></div>";
               }
               if(level>=1)
-                str+="&nbsp&nbsp&nbsp&nbsp";
+                str+=20;
               this.showcomment(temp[jsonObj[user]]['comment_list'],level+1);
               if(level>=1)
-                str=str.slice(20);
+                str-=20;
               if(level==0)
                 html+="</div></div>";
             }
@@ -297,8 +320,8 @@
             <div class="up-info-holder">
               <div class="fixed-box">
                 <div class="up-info-block">
-                  <a class="up-face-holder " href="//space.bilibili.com/615750461" target="_blank">
-                    <img class="up-face-image" data-face-src="author_avatar" src="author_avatar">
+                  <a class="up-face-holder " :href="'http://127.0.0.1:8000/article/getauthorart?user_name='+Art.art_author" target="_blank">
+                    <img class="up-face-image" data-face-src="author_avatar" :src="author_avatar">
                     
                     
                     
@@ -307,7 +330,7 @@
                   </a>
                   <div class="up-info-right-block">
                     <div class="row">
-                      <a class="up-name b-vip-red" href="//space.bilibili.com/615750461" target="_blank" style="color: #FB7299;">
+                      <a class="up-name b-vip-red" :href="'http://127.0.0.1:8000/article/getauthorart?user_name='+Art.art_author" target="_blank" style="color: #FB7299;">
                         ${Art.art_author}
                       </a>
                       
@@ -403,7 +426,7 @@
                     </div>
                     <div class="comment-send ">
                       <div class="user-face">
-                        <img class="user-head" src="//i1.hdslb.com/bfs/face/3ba887be52a30058cbe016543fe7f1de319361bb.jpg@52w_52h.webp"></div>
+                        <img class="user-head" :src="user_avatar"></div>
                         <div class="textarea-container">
                           <i class="ipt-arrow"></i>
                           <textarea id="comt" cols="80" name="msg" rows="5" placeholder="发一条友善的评论" class="ipt-txt"></textarea>

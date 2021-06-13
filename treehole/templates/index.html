@@ -21,57 +21,7 @@
     min-height: 36px;
   }
   </style>
-</head>
-<body>
-    <el-container id="app">
-      <el-aside width="200px">
-        <el-menu class="el-menu-vertical-demo" :collapse="false">
-            {% if user_name == "wywnb" %}
-            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signup_index">登录</a></span></el-menu-item>
-            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signin_index">注册</a></span></el-menu-item>
-            {% else %}
-            <el-menu-item><span>{{user_name|safe}}</span></el-menu-item>
-            <el-menu-item><span><a href="http://127.0.0.1:8000/user/logout">退出</a></span></el-menu-item>
-            {% endif %}
-            {% for cont in content %}
-            <el-menu-item>
-                <template #title>
-                  <i class="el-icon-location"></i>
-                  <span><a href={{cont.url|safe}}>{{cont.head|safe}}</a></span>
-                </template>
-            </el-menu-item>
-            {% endfor %}
-      </el-aside>
-      <el-main>
-        <el-row type="flex" class="row-bg" justify="center">
-          <el-col :span="4">用户头像</el-col>
-          <el-col :span="4"><el-avatar shape="square" :size="200" :fit="cover" :src="user_avatar"></el-avatar></el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24"><div class="grid-content bg-purple-dark"></div></el-col>
-        </el-row>
-        <el-row type="flex" class="row-bg" justify="center">
-          <el-col :span="4">用户名</el-col>
-          <el-col :span="4">{{user_name}}</el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24"><div class="grid-content bg-purple-dark"></div></el-col>
-        </el-row>
-        <el-row type="flex" class="row-bg" justify="center">
-          <el-col :span="4">用户账号</el-col>
-          <el-col :span="4">${user_act}</el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24"><div class="grid-content bg-purple-dark"></div></el-col>
-        </el-row>
-        <el-row type="flex" class="row-bg" justify="center">
-          <el-col :span="4">用户生日</el-col>
-          <el-col :span="4">${user_birth}</el-col>
-        </el-row>
-      </el-main>
-    </el-container>
-</body>
-<script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script>
+  <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script>
   <!-- import Vue before Element -->
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
   <!-- import JavaScript -->
@@ -105,8 +55,85 @@
             })
           })
         },
+        methods:{
+          modify_avatar:function(){
+            var that = this;
+            var formData = new FormData();
+            formData.append("file",document.getElementById("avatar").files[0]);
+            formData.append("user_act",that.user_act);
+            $.ajax({
+              url:"http://127.0.0.1:8000/user/modify_avatar",
+              type:"post",
+              data:formData,
+              processData : false,
+			        contentType : false,
+              success:function(result){
+                  if(result['data']['success']){
+                    that.user_avatar = result['data']['user_avatar'];
+                    alert("修改成功");
+                  }
+                  else{
+                    alert("修改失败");
+                  }
+              }
+            })
+          }
+        },
         delimiters:['${', '}']
       })
     }
   </script>
+</head>
+<body>
+    <el-container id="app">
+      <el-aside width="200px">
+        <el-menu class="el-menu-vertical-demo" :collapse="false">
+            {% if user_name == "wywnb" %}
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signup_index">登录</a></span></el-menu-item>
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signin_index">注册</a></span></el-menu-item>
+            {% else %}
+            <el-menu-item><span>{{user_name|safe}}</span></el-menu-item>
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/logout">退出</a></span></el-menu-item>
+            {% endif %}
+            {% for cont in content %}
+            <el-menu-item>
+                <template #title>
+                  <i class="el-icon-location"></i>
+                  <span><a href={{cont.url|safe}}>{{cont.head|safe}}</a></span>
+                </template>
+            </el-menu-item>
+            {% endfor %}
+      </el-aside>
+      <el-main>
+        <el-row type="flex" class="row-bg" justify="center">
+          <el-col :span="4">用户头像</el-col>
+          <el-col :span="4"><el-avatar shape="square" :size="200" :fit="cover" :src="user_avatar"></el-avatar></el-col>
+          <el-col :span="8"><input type="file" id="avatar"><a type="button" v-on:click="modify_avatar()" class="btn btn-sm btn-success"
+            style="width: 120px; margin-bottom: 30px">修改头像</a></el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24"><div class="grid-content bg-purple-dark"></div></el-col>
+        </el-row>
+        <el-row type="flex" class="row-bg" justify="center">
+          <el-col :span="4">用户名</el-col>
+          <el-col :span="4">{{user_name}}</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24"><div class="grid-content bg-purple-dark"></div></el-col>
+        </el-row>
+        <el-row type="flex" class="row-bg" justify="center">
+          <el-col :span="4">用户账号</el-col>
+          <el-col :span="4">${user_act}</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24"><div class="grid-content bg-purple-dark"></div></el-col>
+        </el-row>
+        <el-row type="flex" class="row-bg" justify="center">
+          <el-col :span="4">用户生日</el-col>
+          <el-col :span="4">${user_birth}</el-col>
+        </el-row>
+      </el-main>
+    </el-container>
+</body>
+
 </html>

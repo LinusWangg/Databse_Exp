@@ -8,6 +8,7 @@ from .models import User
 from hashlib import md5
 import os
 import treehole.settings as settings
+from django.db import connection
 # Create your views here.
 def primary_data1(request):
     data = {}
@@ -141,12 +142,17 @@ def modify_avatar(request):
     user = findUserbyact(user_act)
     if user:
         user_avatar = "http://localhost:8000/media/avatar/"+str(user_act)+".jpg"
-        user.update(user_avatar=user_avatar)
+        print(user_avatar,user_act)
+        cur = connection.cursor()
+        cur.execute("update user_user set user_avatar = %s where user_act = %s",[user_avatar,user_act])
+        cur.close()
         data['user_act'] = user_act
         data['user_avatar'] = user_avatar
+        data['success'] = True
         response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
         return JsonResponse(data=response,safe=False)
     else:
+        data['success'] = False
         response=wrap_json_response(code=ReturnCode.FAILED,message='No user!')
         return JsonResponse(data=response,safe=False)
         

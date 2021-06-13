@@ -292,6 +292,8 @@ def getdetail(request):
 
 def getcomment(request):
     data = {}
+    wcnm = {}
+    cur = connection.cursor()
     post_data = request.body.decode("utf-8")
     post_data = json.loads(post_data)
     art_title = post_data.get('art_title')
@@ -305,7 +307,11 @@ def getcomment(request):
     comments = {}
     for x in comment_temp:
         if(x['commentwho']==0):
+            cur.execute("select user_avatar from user_user where user_name = '{0}'".format(x['commentor']))
             comments[x['comment_id']] = {}
+            wcnm = dictfetchall(cur)
+            if len(wcnm)>0:
+                comments[x['comment_id']]['commentor_avatar'] = wcnm[0]['user_avatar']
             comments[x['comment_id']]['commentor'] = x['commentor']
             comments[x['comment_id']]['comment_content'] = x['comment_content']
             comments[x['comment_id']]['comment_time'] = x['comment_time']
@@ -324,14 +330,18 @@ def getcomment(request):
                 temp = Comment.objects.raw("select * from article_comment where comment_id = %s",[temp['commentwho']])
             while len(temp_s)>0:
                 temp_comments = temp_comments[temp_s.pop()]['comment_list']
+            cur.execute("select user_avatar from user_user where user_name = '{0}'".format(x['commentor']))
             temp_comments[x['comment_id']] = {}
+            wcnm = dictfetchall(cur)
+            if len(wcnm)>0:
+                temp_comments[x['comment_id']]['commentor_avatar'] = wcnm[0]['user_avatar']
             temp_comments[x['comment_id']]['commentor'] = x['commentor']
             temp_comments[x['comment_id']]['comment_content'] = x['comment_content']
             temp_comments[x['comment_id']]['comment_time'] = x['comment_time']
             temp_comments[x['comment_id']]['comment_list'] = {}
             temp_comments[x['comment_id']]['comment_id'] = x['comment_id']
     
-    
+    cur.close()
     data['comments'] = comments
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)
