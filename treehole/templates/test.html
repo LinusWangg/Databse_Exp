@@ -1,55 +1,149 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <!-- import CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <link rel="stylesheet" href="/static/editor.md/css/editormd.css">
+    <script src="/static/editor.md/editormd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    
   <style>
-      .el-menu-vertical-demo:not(.el-menu--collapse) {
+    .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;
     min-height: 400px;
   }
-
+  .bg-purple-dark {
+    background: #FFFFFF;
+  }
+  .grid-content {
+    border-radius: 4px;
+    min-height: 36px;
+  }
+  
   </style>
-</head>
-<body>
-    <div id="app">
-        <template>
-            <el-button type="text" @click="open">点击打开 Message Box</el-button>
-          </template>
-    </div>
-</body>
+  <script type="text/javascript">
+    $(function() {
+        var editor = editormd("test-editor", {
+            // width  : "100%",
+            height : "680px",
+            path   : "/static/editor.md/lib/"
+        });
+    });
+    </script>
+  <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script>
   <!-- import Vue before Element -->
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
   <!-- import JavaScript -->
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <script>
-    new Vue({
-      el: '#app',
-      data() {
-      return {
-        isCollapse: true
-      };
-    },
-    methods: {
-      handleOpen(key, keyPath) {
-        console.log(key, keyPath);
-      },
-      handleClose(key, keyPath) {
-        console.log(key, keyPath);
-      },
-      open() {
-        this.$alert('这是一段内容', '标题名称', {
-          confirmButtonText: '确定',
-          callback: action => {
-            this.$message({
-              type: 'info',
-              message: `action: ${ action }`
-            });
+    var user_name = "{{user_name|safe}}";
+    var page = 1;
+    window.onload = function(){
+      new Vue({
+        el:'#app',
+        data(){
+          return{
+            radio:"2",
+            Exist:"",
           }
-        });
-        }
+        },
+        methods:{
+        submit:function(){
+          var that = this;
+          var title = document.getElementById("title");
+          var article = document.getElementById("article");
+          if(title.value == null || title.value == ''){
+            alert("公告标题不能为空！");
+          }
+          else if(article.value == null || article.value == ''){
+            alert("公告内容不能为空！");
+          }
+          else{
+            $.ajax({
+                url:"http://127.0.0.1:8000/article/writearticle",
+                type:"post",
+                data:JSON.stringify({
+                    art_title:title.value,
+                    art_content:article.value,
+                    art_author:"{{user_name|safe}}",
+                    art_type:that.radio,
+                }),
+                dataType:"json",
+                success:function(result){
+                    var exist = result['data']['Exist'];
+                    if(exist){
+                        alert("请修改标题，标题已存在！");
+                    }
+                    else{
+                        alert("提交成功");
+                        title.value="";
+                        article.value="";
+                    }
+                }
+            })
+          }
     }
-    })
+        }
+      })
+    }
   </script>
+  <script>
+    
+  </script>
+</head>
+<body>
+    <el-container id="app">
+      <el-aside width="210px">
+        <el-menu class="el-menu-vertical-demo" :collapse="false">
+            {% if user_name == "wywnb" %}
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signup_index">登录</a></span></el-menu-item>
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signin_index">注册</a></span></el-menu-item>
+            {% else %}
+            <el-menu-item><span>{{user_name|safe}}</span></el-menu-item>
+            <el-menu-item><span><a href="http://127.0.0.1:8000/user/logout">退出</a></span></el-menu-item>
+            {% endif %}
+            {% for cont in content %}
+            <el-menu-item>
+                <template #title>
+                  <i class="el-icon-location"></i>
+                  <span><a href={{cont.url|safe}}>{{cont.head|safe}}</a></span>
+                </template>
+            </el-menu-item>
+            {% endfor %}
+      </el-aside>
+      <el-main>
+        <div class="form-group">
+            <label for="titleInput">文章标题</label>
+            <input type="text" name="title" class="form-control" id="title" placeholder="文章题目" required="">
+        </div>
+        <el-row :gutter="20">
+          <el-col :span="16">
+          <el-radio v-model="radio" label="2">动画</el-radio>
+          <el-radio v-model="radio" label="1">游戏</el-radio>
+          <el-radio v-model="radio" label="28">生活</el-radio>
+          <el-radio v-model="radio" label="3">影视</el-radio>
+          <el-radio v-model="radio" label="17">科技</el-radio>
+          <el-radio v-model="radio" label="41">笔记</el-radio>
+          <el-radio v-model="radio" label="16">小说</el-radio>
+          </el-col>
+          <el-col :span="8"></el-col>
+        </el-row>
+        <div id="test-editor">
+            <textarea style="display:none;" id="article">
+            </textarea>
+        </div>
+        <div style="text-align: center">
+            <a type="button" class="btn btn-sm btn-primary"
+               style="width: 120px; margin-bottom: 30px; margin-right: 20px">返回</a>
+            <a type="button" onclick="submit()" class="btn btn-sm btn-success"
+               style="width: 120px; margin-bottom: 30px">提交</a>
+        </div>
+      </el-main>
+    </el-container>
+</body>
+  
 </html>

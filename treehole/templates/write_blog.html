@@ -45,25 +45,24 @@
     window.onload = function(){
       new Vue({
         el:'#app',
-        data:{
+        data(){
+          return{
+            radio:"2",
             Exist:"",
+          }
         },
-        
-      })
-    }
-  </script>
-  <script>
-    var user_name = "{{user_name|safe}}";
-    function submit(){
-        var title = document.getElementById("title");
-        var article = document.getElementById("article");
-        if(title.value == null || title.value == ''){
+        methods:{
+        submit:function(){
+          var that = this;
+          var title = document.getElementById("title");
+          var article = document.getElementById("article");
+          if(title.value == null || title.value == ''){
             alert("公告标题不能为空！");
-        }
-        else if(article.value == null || article.value == ''){
+          }
+          else if(article.value == null || article.value == ''){
             alert("公告内容不能为空！");
-        }
-        else{
+          }
+          else{
             $.ajax({
                 url:"http://127.0.0.1:8000/article/writearticle",
                 type:"post",
@@ -71,7 +70,7 @@
                     art_title:title.value,
                     art_content:article.value,
                     art_author:"{{user_name|safe}}",
-                    art_type:2,
+                    art_type:that.radio,
                 }),
                 dataType:"json",
                 success:function(result){
@@ -86,8 +85,14 @@
                     }
                 }
             })
-        }
+          }
     }
+        }
+      })
+    }
+  </script>
+  <script>
+    
   </script>
 </head>
 <body>
@@ -115,6 +120,18 @@
             <label for="titleInput">文章标题</label>
             <input type="text" name="title" class="form-control" id="title" placeholder="文章题目" required="">
         </div>
+        <el-row :gutter="20">
+          <el-col :span="16">
+          <el-radio v-model="radio" label="2">动画</el-radio>
+          <el-radio v-model="radio" label="1">游戏</el-radio>
+          <el-radio v-model="radio" label="28">生活</el-radio>
+          <el-radio v-model="radio" label="3">影视</el-radio>
+          <el-radio v-model="radio" label="17">科技</el-radio>
+          <el-radio v-model="radio" label="41">笔记</el-radio>
+          <el-radio v-model="radio" label="16">小说</el-radio>
+          </el-col>
+          <el-col :span="8"></el-col>
+        </el-row>
         <div id="test-editor">
             <textarea style="display:none;" id="article">
             </textarea>
@@ -122,7 +139,7 @@
         <div style="text-align: center">
             <a type="button" class="btn btn-sm btn-primary"
                style="width: 120px; margin-bottom: 30px; margin-right: 20px">返回</a>
-            <a type="button" onclick="submit()" class="btn btn-sm btn-success"
+            <a type="button" v-on:click="submit()" class="btn btn-sm btn-success"
                style="width: 120px; margin-bottom: 30px">提交</a>
         </div>
       </el-main>

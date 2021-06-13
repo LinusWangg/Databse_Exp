@@ -63,6 +63,7 @@
         el:'#app',
         data(){
           return {
+            radio:'99',
             Arts:[]
           }
         },
@@ -87,31 +88,23 @@
             cs = 1;
             var that = this;
             var keyword = document.getElementById("kw").value;
+            var timefrom = $("input[name=time_from]").val();
+            if(timefrom==""){
+              timefrom="1990-1-1";
+            }
+            var timeto = $("input[name=time_to]").val();
+            if(timeto==""){
+              timeto="2050-1-1";
+            }
             $.ajax({
-              url:"http://127.0.0.1:8000/article/getkeyword",
+              url:"http://127.0.0.1:8000/article/search",
                 type:"post",
                 data:JSON.stringify({
                     page:val,
                     key_word:keyword,
-                }),
-                dataType:"json",
-                success:function(result){
-                    that.Arts = result['data']['Arts'];
-                }
-            })
-          },
-          submit_date:function(val){
-            cs = 2;
-            var that = this;
-            var timefrom = $("input[name=time_from]").val();
-            var timeto = $("input[name=time_to]").val();
-            $.ajax({
-              url:"http://127.0.0.1:8000/article/getdate",
-                type:"post",
-                data:JSON.stringify({
-                    page:val,
                     time_from:timefrom,
                     time_to:timeto,
+                    type:that.radio,
                 }),
                 dataType:"json",
                 success:function(result){
@@ -121,12 +114,7 @@
           },
           Pagechange(val){
             var that = this;
-            if(cs==1||cs==0){
               that.submit(val);
-            }
-            else{
-              that.submit_date(val);
-            }
           }
         },
         delimiters:['${', '}']
@@ -157,8 +145,7 @@
       <el-main>
         <el-row :gutter="20">
           <el-col :span="16"><input type="text" name="title" class="form-control" id="kw" placeholder="关键词" required=""></el-col>
-          <el-col :span="8"><a type="button" v-on:click="submit(1)" class="btn btn-sm btn-success"
-            style="width: 120px; margin-bottom: 30px">提交</a></el-col>
+          <el-col :span="8"></el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="8">
@@ -177,8 +164,21 @@
               </span>
             </div>
           </el-col>
-          <el-col :span="8"><a type="button" v-on:click="submit_date(1)" class="btn btn-sm btn-success"
+          <el-col :span="8"><a type="button" v-on:click="submit(1)" class="btn btn-sm btn-success"
             style="width: 120px; margin-bottom: 30px">提交</a></el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="16">
+          <el-radio v-model="radio" label="2">动画</el-radio>
+          <el-radio v-model="radio" label="1">游戏</el-radio>
+          <el-radio v-model="radio" label="28">生活</el-radio>
+          <el-radio v-model="radio" label="3">影视</el-radio>
+          <el-radio v-model="radio" label="17">科技</el-radio>
+          <el-radio v-model="radio" label="41">笔记</el-radio>
+          <el-radio v-model="radio" label="16">小说</el-radio>
+          <el-radio v-model="radio" label="99">全部</el-radio>
+          </el-col>
+          <el-col :span="8"></el-col>
         </el-row>
         <div class="vd-list-cnt">
             <ul class="vd-list mod-2">

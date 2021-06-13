@@ -28,6 +28,13 @@ def primary_data(request):
                     {'head':'许愿墙','url':'#'},
                     {'head':'报个BUG','url':'#'}
                     ]
+    data['type'] = [{'type':'动画','url':'http://127.0.0.1:8000/article/blog/#','index':'2'},
+                    {'type':'游戏','url':'http://127.0.0.1:8000/article/blog/#','index':'1'},
+                    {'type':'生活','url':'http://127.0.0.1:8000/article/blog/#','index':'28'},
+                    {'type':'影视','url':'http://127.0.0.1:8000/article/blog/#','index':'3'},
+                    {'type':'科技','url':'http://127.0.0.1:8000/article/blog/#','index':'17'},
+                    {'type':'笔记','url':'http://127.0.0.1:8000/article/blog/#','index':'41'},
+                    {'type':'小说','url':'http://127.0.0.1:8000/article/blog/#','index':'16'},]
     return render(request,'blog_all.html',data)
 
 def primary_data2(request):
@@ -156,18 +163,26 @@ def writecomment(request):
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)
 
-def getkeyword(request):
+def search(request):
     data = {}
     post_data = request.body.decode("utf-8")
     post_data = json.loads(post_data)
-    key_word = '%'+str(post_data.get('key_word'))+'%'
+    key_word = post_data.get('key_word')
+    if(key_word):
+        key_word = '%'+str(post_data.get('key_word'))+'%'
+    else:
+        key_word = '%'
+    time_from = post_data.get('time_from')
+    time_to = post_data.get('time_to')
+    art_type = post_data.get('type')
+    if art_type == "99":
+        art_type = '%'
     page = post_data.get('page')
     Arts = []
     page_from = 10*(page-1)
     page_to = 10*page
     # 分页
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_title like %s limit %s,%s",[key_word,page_from,page_to])
-    print(arts)
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_title like %s and art_time between %s and %s and art_type like %s limit %s,%s",[key_word,time_from,time_to,art_type,page_from,page_to])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
