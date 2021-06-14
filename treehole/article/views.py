@@ -25,7 +25,7 @@ def primary_data(request):
     data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
                     {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
                     {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
-                    {'head':'许愿墙','url':'#'},
+                    {'head':'个人信息','url':'http://127.0.0.1:8000'},
                     {'head':'报个BUG','url':'#'}
                     ]
     data['type'] = [{'type':'动画','url':'http://127.0.0.1:8000/article/blog/#','index':'2'},
@@ -47,7 +47,7 @@ def primary_data2(request):
     data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
                     {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
                     {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
-                    {'head':'许愿墙','url':'#'},
+                    {'head':'个人信息','url':'http://127.0.0.1:8000'},
                     {'head':'报个BUG','url':'#'}
                     ]
     data['type'] = [{'type':'动画','url':'http://127.0.0.1:8000/article/blog/#','index':'2'},
@@ -69,7 +69,7 @@ def primary_data3(request):
     data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
                     {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
                     {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
-                    {'head':'许愿墙','url':'#'},
+                    {'head':'个人信息','url':'http://127.0.0.1:8000'},
                     {'head':'报个BUG','url':'#'}
                     ]
     return render(request,'write_blog.html',data)
@@ -84,7 +84,7 @@ def primary_data4(request):
     data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
                     {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
                     {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
-                    {'head':'许愿墙','url':'#'},
+                    {'head':'个人信息','url':'http://127.0.0.1:8000'},
                     {'head':'报个BUG','url':'#'}
                     ]
     return render(request,'myart.html',data)
@@ -99,7 +99,7 @@ def findbyarttitle(art_title):
     return Art['fields']
 
 def findbyauthor(art_author):
-    Art = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_author = %s",[art_author])
+    Art = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_author = %s",[art_author])
     Articles = []
     for x in Art:
         Articles.append(x)
@@ -115,19 +115,24 @@ def deletemine(art_title,user_name,user_pwd):
 
 def writearticle(request):
     data = {}
-    post_data = request.body.decode("utf-8")
-    post_data = json.loads(post_data)
-    user_name = post_data.get('art_author')
-    art_title = post_data.get('art_title')
+    user_name = request.POST.get("art_author")
+    art_title = request.POST.get("art_title")
     if(findbyarttitle(art_title)):
         data['Exist'] = True
     else:
         data['Exist'] = False
-        art_content = post_data.get('art_content')
-        art_type = post_data.get('art_type')
+        art_content = request.POST.get('art_content')
+        art_type = request.POST.get('art_type')
+        user_avatar = request.FILES.get('file')
+        file_name = str(art_title)+'.jpg'
+        file_path = os.path.join(settings.BASE_DIR,'media/art_pic',file_name)
+        with open(file_path, 'wb') as f:
+            for chunk in user_avatar.chunks():
+                f.write(chunk)
+        artpicpath = "http://localhost:8000/media/art_pic/"+str(art_title)+".jpg"
         art_author = user_name
         art_time = datetime.datetime.now()
-        article = Article(art_title=art_title,art_time=art_time,art_content=art_content,art_author=art_author,art_type=art_type)
+        article = Article(art_title=art_title,art_time=art_time,art_content=art_content,art_author=art_author,art_type=art_type,art_pic=artpicpath)
         article.save()
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)
@@ -182,7 +187,7 @@ def search(request):
     page_from = 10*(page-1)
     page_to = 10*page
     # 分页
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_title like %s and art_time between %s and %s and art_type like %s limit %s,%s",[key_word,time_from,time_to,art_type,page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_title like %s and art_time between %s and %s and art_type like %s limit %s,%s",[key_word,time_from,time_to,art_type,page_from,page_to])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
@@ -204,7 +209,7 @@ def getmine(request):
     page_from = 10*(page-1)
     page_to = 10*page
     # 分页
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_author = %s limit %s,%s",[art_author,page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_author = %s limit %s,%s",[art_author,page_from,page_to])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
@@ -225,7 +230,7 @@ def getall(request):
     page_from = 10*(page-1)
     page_to = 10*page
     # 分页
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article limit %s,%s",[page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article limit %s,%s",[page_from,page_to])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
@@ -268,7 +273,7 @@ def getdate(request):
     page_to = 10*page
     time_from = post_data.get('time_from')
     time_to = post_data.get('time_to')
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type from article_article where art_time between %s and %s limit %s,%s",[time_from,time_to,page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_time between %s and %s limit %s,%s",[time_from,time_to,page_from,page_to])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:

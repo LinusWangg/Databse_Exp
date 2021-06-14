@@ -1,132 +1,25 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <!-- import CSS -->
-    
-    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
-    <link rel="stylesheet" href="/static/editor.md/css/editormd.css">
-    <script src="/static/editor.md/editormd.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-    
-  <style>
-    .el-menu-vertical-demo:not(.el-menu--collapse) {
-    width: 200px;
-    min-height: 400px;
-  }
-  .bg-purple-dark {
-    background: #FFFFFF;
-  }
-  .grid-content {
-    border-radius: 4px;
-    min-height: 36px;
-  }
+<div class="h">
+  <div class="wrapper">
+    <div class="h-inner" style="background-image: url(&quot;//i0.hdslb.com/bfs/space/cb1c3ef50e22b6096fde67febe863494caefebad.png@2560w_400h_100q_1o.webp&quot;);">
+      <div class="h-gradient"></div>
+      <div class="h-user">
+        <div class="h-info clearfix">
+          <div class="h-avatar">
+            <img src="//i1.hdslb.com/bfs/face/3ba887be52a30058cbe016543fe7f1de319361bb.jpg@128w_128h_1o.webp" id="h-avatar">
+            <a target="_blank" href="https://account.bilibili.com/account/face/upload" class="avatar-cover">
+            更换头像
+            </a>
+            <img src="//i0.hdslb.com/bfs/vip/icon_Certification_big_member_22_3x.png" title="大会员" class="avatar-icon">
+          </div>
+          <div class="h-basic"><div>
+          <span id="h-name">别骂了丶</span>
+          <span id="h-ceritification" class="icon"></span>
+          <span id="h-gender" class="icon gender male"></span>
+          <a href="//www.bilibili.com/html/help.html#k" target="_blank" lvl="5" class="h-level m-level"></a>
+          <a href="//account.bilibili.com/account/big" target="_blank" class="h-vipType" style="color: rgb(255, 255, 255); background-color: rgb(251, 114, 153);">大会员</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   
-  </style>
-  <script type="text/javascript">
-    $(function() {
-        var editor = editormd("test-editor", {
-            // width  : "100%",
-            height : "480px",
-            path   : "/static/editor.md/lib/"
-        });
-    });
-    </script>
-  <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script>
-  <!-- import Vue before Element -->
-  <script src="https://unpkg.com/vue/dist/vue.js"></script>
-  <!-- import JavaScript -->
-  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-  <script>
-    var user_name = "{{user_name|safe}}";
-    var page = 1;
-    window.onload = function(){
-      new Vue({
-        el:'#app',
-        data:{
-            Exist:"",
-        },
-        
-      })
-    }
-  </script>
-  <script>
-    var user_name = "{{user_name|safe}}";
-    function submit(){
-        var title = document.getElementById("title");
-        var article = document.getElementById("article");
-        if(title.value == null || title.value == ''){
-            alert("公告标题不能为空！");
-        }
-        else if(article.value == null || article.value == ''){
-            alert("公告内容不能为空！");
-        }
-        else{
-            $.ajax({
-                url:"http://127.0.0.1:8000/article/writearticle",
-                type:"post",
-                data:JSON.stringify({
-                    art_title:title.value,
-                    art_content:article.value,
-                    art_author:"{{user_name|safe}}",
-                    art_type:2,
-                }),
-                dataType:"json",
-                success:function(result){
-                    var exist = result['data']['Exist'];
-                    if(exist){
-                        alert("请修改标题，标题已存在！");
-                    }
-                    else{
-                        alert("提交成功");
-                        title.value="";
-                        article.value="";
-                    }
-                }
-            })
-        }
-    }
-  </script>
-</head>
-<body>
-    <el-container id="app">
-      <el-aside width="210px">
-        <el-menu class="el-menu-vertical-demo" :collapse="false">
-            {% if user_name == "wywnb" %}
-            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signup_index">登录</a></span></el-menu-item>
-            <el-menu-item><span><a href="http://127.0.0.1:8000/user/signin_index">注册</a></span></el-menu-item>
-            {% else %}
-            <el-menu-item><span>{{user_name|safe}}</span></el-menu-item>
-            <el-menu-item><span><a href="http://127.0.0.1:8000/user/logout">退出</a></span></el-menu-item>
-            {% endif %}
-            {% for cont in content %}
-            <el-menu-item>
-                <template #title>
-                  <i class="el-icon-location"></i>
-                  <span><a href={{cont.url|safe}}>{{cont.head|safe}}</a></span>
-                </template>
-            </el-menu-item>
-            {% endfor %}
-      </el-aside>
-      <el-main>
-        <div class="form-group">
-            <label for="titleInput">公告标题</label>
-            <input type="text" name="title" class="form-control" id="title" placeholder="公告" required="">
-        </div>
-        <div id="test-editor">
-            <textarea style="display:none;" id="article">
-            </textarea>
-        </div>
-        <div style="text-align: center">
-            <a type="button" class="btn btn-sm btn-primary"
-               style="width: 120px; margin-bottom: 30px; margin-right: 20px">返回</a>
-            <a type="button" onclick="submit()" class="btn btn-sm btn-success"
-               style="width: 120px; margin-bottom: 30px">提交</a>
-        </div>
-      </el-main>
-    </el-container>
-</body>
-  
-</html>

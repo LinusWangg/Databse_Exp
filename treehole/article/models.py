@@ -9,6 +9,7 @@ class Article(models.Model):
     art_author = models.CharField(max_length=255,null=False)
     art_time = models.DateField(auto_now=True,null=False)
     art_type = models.IntegerField()
+    art_pic = models.CharField(max_length=255)
 
 class Comment(models.Model):
     comment_id = models.IntegerField(primary_key=True)

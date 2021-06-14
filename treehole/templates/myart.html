@@ -12,6 +12,7 @@
     <script src="/static/js/moment-with-locales.js"></script>
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="//s1.hdslb.com/bfs/static/jinkela/space/css/space.3.5e919b9c6502223dc9f88458bce147c4268addff.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
   <style>
       .el-menu-vertical-demo:not(.el-menu--collapse) {
@@ -43,7 +44,9 @@
       new Vue({
         el:'#app',
         data:{
-            Arts:[]
+            Arts:[],
+            user_avatar:"",
+            user_name:""
         },
         mounted(){
           this.$nextTick(()=>{
@@ -63,6 +66,18 @@
                 dataType:"json",
                 success:function(result){
                     that.Arts = result['data']['Arts'];
+                }
+            })
+            $.ajax({
+                url:"http://127.0.0.1:8000/user/userinfo",
+                type:"post",
+                data:JSON.stringify({
+                  user_name:find
+                }),
+                dataType:"json",
+                success:function(result){
+                  that.user_avatar = result['data']['user_avatar'];
+                  that.user_name = result['data']['user_name'];
                 }
             })
           })
@@ -119,6 +134,24 @@
             {% endfor %}
       </el-aside>
       <el-main>
+        <div class="h">
+  <div class="wrapper">
+    <div class="h-inner" style="background-image: url(http://127.0.0.1:8000/media/avatar/3.jpg);">
+      <div class="h-gradient"></div>
+      <div class="h-user">
+        <div class="h-info clearfix">
+          <div class="h-avatar">
+            <img :src='user_avatar' id="h-avatar">
+          </div>
+          <div class="h-basic"><div>
+          <span id="h-name">${user_name}</span>
+          <span id="h-ceritification" class="icon"></span>
+          <span id="h-gender" class="icon gender male"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
         <div class="vd-list-cnt">
             <ul class="vd-list mod-2">
                 <li v-for="art in Arts">
@@ -128,41 +161,27 @@
                                 <a href="//www.bilibili.com/video/BV1ay4y137jg" target="_blank">
                                     <div class="pic">
                                         <div class="lazy-img">
-                                            <img alt="谁说帧率高=流畅？国产大厂：帧率波动小才是王道" src="">
+                                            <img :src="art.art_pic">
                                         </div>
                                     </div>
                                     <p class="num">
-                                        <span class="play">
-                                            <i class="icon"></i>
-                                            1
-                                        </span>
-                                        <span class="danmu">
-                                            <i class="icon"></i>
-                                            0
-                                        </span>
+
                                     </p>
                                 </a>
                             </div>
                         </div>
                         <div class="r">
-                            <a :href="'/article/blog?title='+art.art_title" target="_blank" title="" class="title">
+                            <a :href="'http://127.0.0.1:8000/article/blog?title='+art.art_title" target="_blank" class="title">
                                 ${art.art_title}
                             </a>
                             <div class="v-desc">
                                 ${art.art_time}
                             </div>
                             <div class="v-info">
-                                <span class="v-info-i">
-                                    <i title="观看" class="b-icon b-icon-v-play"></i>
-                                    <span>1</span>
-                                </span>
-                                <span class="v-info-i">
-                                    <i title="弹幕" class="b-icon b-icon-v-dm"></i>
-                                    <span>0</span>
-                                </span>
+
                             </div>
                             <div class="up-info">
-                                <a href="'/article/getauthorart?user_name='+art.art_author" target="_blank" title=${art.art_author} class="v-author">
+                                <a :href="'http://127.0.0.1:8000/article/getauthorart?user_name='+art.art_author" target="_blank" class="v-author">
                                 ${art.art_author}
                                 </a>
                             </div>

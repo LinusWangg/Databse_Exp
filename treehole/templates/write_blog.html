@@ -42,6 +42,21 @@
   <script>
     var user_name = "{{user_name|safe}}";
     var page = 1;
+    function previewFile() {
+    var preview = document.querySelector('img');
+    var file    = document.getElementById("art_pic").files[0];
+    var reader  = new FileReader();
+
+    reader.onloadend = function () {
+      preview.src = reader.result;
+    }
+
+    if (file) {
+      reader.readAsDataURL(file);
+    } else {
+      preview.src = "";
+    }
+  }
     window.onload = function(){
       new Vue({
         el:'#app',
@@ -62,17 +77,22 @@
           else if(article.value == null || article.value == ''){
             alert("公告内容不能为空！");
           }
+          else if(document.getElementById("art_pic").files[0]==null){
+            alert("缩略图不能为空！");
+          }
           else{
+            var formData = new FormData();
+            formData.append("file",document.getElementById("art_pic").files[0]);
+            formData.append("art_title",title.value);
+            formData.append("art_content",article.value);
+            formData.append("art_author","{{user_name|safe}}");
+            formData.append("art_type",that.radio);
             $.ajax({
                 url:"http://127.0.0.1:8000/article/writearticle",
                 type:"post",
-                data:JSON.stringify({
-                    art_title:title.value,
-                    art_content:article.value,
-                    art_author:"{{user_name|safe}}",
-                    art_type:that.radio,
-                }),
-                dataType:"json",
+                data:formData,
+                processData : false,
+			          contentType : false,
                 success:function(result){
                     var exist = result['data']['Exist'];
                     if(exist){
@@ -136,6 +156,8 @@
             <textarea style="display:none;" id="article">
             </textarea>
         </div>
+        <input id="art_pic" type="file" onchange="previewFile()"><br>
+        <img src="" style="height:150px;width:200px" alt="缩略图">
         <div style="text-align: center">
             <a type="button" class="btn btn-sm btn-primary"
                style="width: 120px; margin-bottom: 30px; margin-right: 20px">返回</a>

@@ -12,7 +12,7 @@ def primary_data(request):
     data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
                     {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
                     {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
-                    {'head':'许愿墙','url':'#'},
+                    {'head':'个人信息','url':'http://127.0.0.1:8000'},
                     {'head':'报个BUG','url':'#'}
                     ]
     return render(request,'index.html',data)

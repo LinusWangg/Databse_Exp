@@ -8,6 +8,7 @@
     <link rel="preload" href="//s1.hdslb.com/bfs/static/jinkela/subchannel/css/subchannel.0.5378e0e919d5997b0ab8c43e368711d656adccbc.css" as="style">
     <link rel="preload" href="//s1.hdslb.com/bfs/static/jinkela/subchannel/subchannel.5378e0e919d5997b0ab8c43e368711d656adccbc.js" as="script">
     <link rel="stylesheet" href="//s1.hdslb.com/bfs/static/jinkela/subchannel/css/subchannel.0.5378e0e919d5997b0ab8c43e368711d656adccbc.css">
+    <link href="//s1.hdslb.com/bfs/static/jinkela/space/css/space.3.5e919b9c6502223dc9f88458bce147c4268addff.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
     <script src="/static/js/moment-with-locales.js"></script>
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
@@ -63,6 +64,8 @@
         el:'#app',
         data(){
           return {
+            user_avatar:"",
+            user_name:"",
             radio:'99',
             Arts:[]
           }
@@ -79,6 +82,18 @@
                 dataType:"json",
                 success:function(result){
                     that.Arts = result['data']['Arts'];
+                }
+            })
+            $.ajax({
+                url:"http://127.0.0.1:8000/user/userinfo",
+                type:"post",
+                data:JSON.stringify({
+                  user_name:user_name
+                }),
+                dataType:"json",
+                success:function(result){
+                  that.user_avatar = result['data']['user_avatar'];
+                  that.user_name = result['data']['user_name'];
                 }
             })
           })
@@ -122,7 +137,7 @@
     }
   </script>
 </head>
-<body>
+<body style="height:1200px">
     <el-container id="app">
       <el-aside width="210px">
         <el-menu class="el-menu-vertical-demo" :collapse="false">
@@ -143,11 +158,26 @@
             {% endfor %}
       </el-aside>
       <el-main>
+      <div class="h">
+  <div class="wrapper">
+    <div class="h-inner" style="background-image: url(http://127.0.0.1:8000/media/avatar/3.jpg);">
+      <div class="h-gradient"></div>
+      <div class="h-user">
+        <div class="h-info clearfix">
+          <div class="h-avatar">
+            <img :src='user_avatar' id="h-avatar">
+          </div>
+          <div class="h-basic"><div>
+          <span id="h-name">${user_name}</span>
+          <span id="h-ceritification" class="icon"></span>
+          <span id="h-gender" class="icon gender male"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
         <el-row :gutter="20">
-          <el-col :span="16"><input type="text" name="title" class="form-control" id="kw" placeholder="关键词" required=""></el-col>
-          <el-col :span="8"></el-col>
-        </el-row>
-        <el-row :gutter="20">
+          <el-col :span="8"><input type="text" name="title" class="form-control" id="kw" placeholder="关键词" required=""></el-col>
           <el-col :span="8">
             <div class='input-group date' id='datetimepicker1'>
             <input type='text' class="form-control required" name="time_from"/>
@@ -164,9 +194,9 @@
               </span>
             </div>
           </el-col>
-          <el-col :span="8"><a type="button" v-on:click="submit(1)" class="btn btn-sm btn-success"
-            style="width: 120px; margin-bottom: 30px">提交</a></el-col>
+
         </el-row>
+        <div style="height:20px"></div>
         <el-row :gutter="20">
           <el-col :span="16">
           <el-radio v-model="radio" label="2">动画</el-radio>
@@ -178,7 +208,8 @@
           <el-radio v-model="radio" label="16">小说</el-radio>
           <el-radio v-model="radio" label="99">全部</el-radio>
           </el-col>
-          <el-col :span="8"></el-col>
+           <el-col :span="6"><a type="button" v-on:click="submit(1)" class="btn btn-sm btn-success"
+            style="width: 120px; margin-bottom: 30px">提交</a></el-col>
         </el-row>
         <div class="vd-list-cnt">
             <ul class="vd-list mod-2">
@@ -186,21 +217,14 @@
                     <div class="l-item">
                         <div class="l">
                             <div class="spread-module">
-                                <a href="//www.bilibili.com/video/BV1ay4y137jg" target="_blank">
+                                <a :href="'/article/blog?title='+art.art_title" target="_blank">
                                     <div class="pic">
                                         <div class="lazy-img">
-                                            <img alt="谁说帧率高=流畅？国产大厂：帧率波动小才是王道" src="">
+                                            <img :src="art.art_pic">
                                         </div>
                                     </div>
                                     <p class="num">
-                                        <span class="play">
-                                            <i class="icon"></i>
-                                            1
-                                        </span>
-                                        <span class="danmu">
-                                            <i class="icon"></i>
-                                            0
-                                        </span>
+                                        
                                     </p>
                                 </a>
                             </div>
@@ -213,14 +237,7 @@
                                 ${art.art_time}
                             </div>
                             <div class="v-info">
-                                <span class="v-info-i">
-                                    <i title="观看" class="b-icon b-icon-v-play"></i>
-                                    <span>1</span>
-                                </span>
-                                <span class="v-info-i">
-                                    <i title="弹幕" class="b-icon b-icon-v-dm"></i>
-                                    <span>0</span>
-                                </span>
+                                
                             </div>
                             <div class="up-info">
                               <a :href="'/article/getauthorart?user_name='+art.art_author" target="_blank" class="v-author">
