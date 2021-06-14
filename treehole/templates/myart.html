@@ -14,6 +14,7 @@
     <link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
     <link href="//s1.hdslb.com/bfs/static/jinkela/space/css/space.3.5e919b9c6502223dc9f88458bce147c4268addff.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
   <style>
       .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;
@@ -52,6 +53,23 @@
           this.$nextTick(()=>{
             var that=this;
             var find = null;
+            var option = {
+            backgroundColor:'#dddd',
+            visualMap: {
+                show: false,
+                min: 0,
+                max: 10,
+                left: 'center',
+            },
+            calendar: {
+                range: '2021'
+            },
+            series: {
+                type: 'heatmap',
+                coordinateSystem: 'calendar',
+                data: "",
+            }
+            };
             find = getQueryString("user_name");
             if(find == null){
                 find = "{{user_name|safe}}";
@@ -79,6 +97,20 @@
                   that.user_avatar = result['data']['user_avatar'];
                   that.user_name = result['data']['user_name'];
                 }
+            })
+            $.ajax({
+              url:"http://127.0.0.1:8000/article/timedata",
+              type:"post",
+              data:JSON.stringify({
+                user_name:find
+              }),
+              dataType:"json",
+              success:function(result){
+                var myecharts = echarts.init(document.getElementById("echarts"));
+                option['series']['data'] = result['data'];
+                console.log(option);
+                myecharts.setOption(option);
+              }
             })
           })
         },
@@ -113,7 +145,7 @@
     }
   </script>
 </head>
-<body>
+<body style="height:1500px">
     <el-container id="app">
       <el-aside width="210px">
         <el-menu class="el-menu-vertical-demo" :collapse="false">
@@ -152,6 +184,8 @@
     </div>
   </div>
 </div>
+<div id="echarts" style="width:100%;height:200px;"></div>
+<div style="width:100%;height:20px;"></div>
         <div class="vd-list-cnt">
             <ul class="vd-list mod-2">
                 <li v-for="art in Arts">

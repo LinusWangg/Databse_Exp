@@ -295,6 +295,20 @@ def getdetail(request):
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)
 
+def timedata(request):
+    data = []
+    post_data = request.body.decode("utf-8")
+    post_data = json.loads(post_data)
+    user_name = post_data.get('user_name')
+    cur = connection.cursor()
+    cur.execute("select art_time,count(*) from (select * from article_article where art_author = '"+user_name+"') GROUP BY art_time")
+    temp = dictfetchall(cur)
+    for x in temp:
+        data.append([x['art_time'],x['count']])
+    cur.close()
+    response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
+    return JsonResponse(data=response,safe=False)
+
 def getcomment(request):
     data = {}
     wcnm = {}

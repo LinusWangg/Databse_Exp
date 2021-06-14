@@ -31,4 +31,5 @@ urlpatterns = [
     path('getdetail',views.getdetail,name="getdetail"),
     path('getdate',views.getdate,name="getdate"),
     path('getauthorart',views.primary_data4,name="getauthorart"),
+    path('timedata',views.timedata,name="timedata"),
 ]
