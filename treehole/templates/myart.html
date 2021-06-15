@@ -147,7 +147,12 @@
                 that.submit(val);
             },
             handleCommand(command){
-              
+              if(command == "delete"){
+                alert("delete");
+              }
+              else if(command == "modify"){
+                alert("modify");
+              }
             }
         },
         delimiters:['${', '}']
@@ -230,6 +235,7 @@
                                 </a>
                             </div>
                         </div>
+                        <div v-if="user_name == '{{user_name|safe}}'">
                         <el-dropdown @command="handleCommand">
                         <span class="el-dropdown-link">
                           更多<i class="el-icon-arrow-down el-icon--right"></i>
@@ -240,6 +246,7 @@
                         <el-dropdown-item command="modify">修改</el-dropdown-item>
                         </el-dropdown-menu>
                         </el-dropdown>
+                        </div>
                     </div>
                 </li>
             </ul>
