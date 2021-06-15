@@ -27,6 +27,13 @@
     border-radius: 4px;
     min-height: 36px;
   }
+  .el-dropdown-link {
+    cursor: pointer;
+    color: #409EFF;
+  }
+  .el-icon-arrow-down {
+    font-size: 12px;
+  }
   </style>
   <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script>
   <!-- import Vue before Element -->
@@ -138,6 +145,9 @@
             Pagechange(val){
                 var that = this;
                 that.submit(val);
+            },
+            handleCommand(command){
+              
             }
         },
         delimiters:['${', '}']
@@ -185,7 +195,7 @@
   </div>
 </div>
 <div id="echarts" style="width:100%;height:200px;"></div>
-<div style="width:100%;height:20px;"></div>
+<div style="width:100%;height:20px;background-color:#dddd;"></div>
         <div class="vd-list-cnt">
             <ul class="vd-list mod-2">
                 <li v-for="art in Arts">
@@ -220,6 +230,16 @@
                                 </a>
                             </div>
                         </div>
+                        <el-dropdown @command="handleCommand">
+                        <span class="el-dropdown-link">
+                          更多<i class="el-icon-arrow-down el-icon--right"></i>
+                        </span>
+                        <el-dropdown-menu slot="dropdown">
+                        <div id="elmenu"></div>
+                        <el-dropdown-item command="delete">删除</el-dropdown-item>
+                        <el-dropdown-item command="modify">修改</el-dropdown-item>
+                        </el-dropdown-menu>
+                        </el-dropdown>
                     </div>
                 </li>
             </ul>
