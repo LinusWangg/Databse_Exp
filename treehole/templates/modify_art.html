@@ -26,17 +26,13 @@
   
   </style>
   <script type="text/javascript">
+    var editor;
     $(function() {
-        var editor = editormd("test-editor", {
+        editor = editormd("test-editor", {
             // width  : "100%",
             height : "680px",
             path   : "/static/editor.md/lib/",
-            urlType : "domain",
-            saveHTMLToTextarea : true,
-            imageUpload : true,
-            crossDomainUpload: true,
-            imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-            imageUploadURL : "http://localhost:8000/article/imgupload",//注意你后端的上传图片服务地址
+            imageUploadURL: "/media/"+getQueryString("art_title"),
         });
     });
     </script>
@@ -63,57 +59,69 @@
       preview.src = "";
     }
   }
+  function getQueryString(name) {
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if(r!=null)return  decodeURI(r[2]); return null;
+    }
     window.onload = function(){
       new Vue({
         el:'#app',
         data(){
           return{
-            radio:"2",
-            Exist:"",
+            Art:"",
           }
+        },
+        mounted(){
+            this.$nextTick(()=>{
+            var that = this;
+            $.ajax({
+                url:"http://127.0.0.1:8000/article/getdetail",
+                type:"post",
+                data:JSON.stringify({
+                    art_title:getQueryString("art_title")
+                }),
+                dataType:"json",
+                success:function(result){
+                    that.Art = result['data']['Arts'];
+                    editor.setValue(result['data']['Arts']['art_content']);
+                }
+            })
+            }
+        )
         },
         methods:{
         submit:function(){
-          var that = this;
-          var title = document.getElementById("title");
-          var article = document.getElementById("article");
-          if(title.value == null || title.value == ''){
-            alert("公告标题不能为空！");
-          }
-          else if(article.value == null || article.value == ''){
-            alert("公告内容不能为空！");
-          }
-          else if(document.getElementById("art_pic").files[0]==null){
-            alert("缩略图不能为空！");
-          }
-          else{
-            var formData = new FormData();
-            formData.append("file",document.getElementById("art_pic").files[0]);
-            formData.append("art_title",title.value);
-            formData.append("art_content",article.value);
-            formData.append("art_author","{{user_name|safe}}");
-            formData.append("art_type",that.radio);
+            var cont=prompt("请输入密码","");
+            if(cont==""||cont==null){
+                alert("注意格式");
+            }
+            else{
             $.ajax({
-                url:"http://127.0.0.1:8000/article/writearticle",
+                url:"http://127.0.0.1:8000/article/modify_art",
                 type:"post",
-                data:formData,
-                processData : false,
-			          contentType : false,
+                data:JSON.stringify({
+                    user_name:"{{user_name|safe}}",
+                    art_content:document.getElementById("article").value,
+                    art_title:getQueryString("art_title"),
+                    user_pwd:cont
+                }),
+                dataType:"json",
                 success:function(result){
-                    var exist = result['data']['Exist'];
-                    if(exist){
-                        alert("请修改标题，标题已存在！");
+                    if(result['data']['Allow']){
+                      alert("修改成功");
+                      window.location.replace(-1);
                     }
                     else{
-                        alert("提交成功");
-                        title.value="";
-                        article.value="";
+                      alert("权限不足");
                     }
                 }
             })
-          }
-    }
-        }
+            }
+            }
+            
+        },
+        delimiters:['${', '}']
       })
     }
   </script>
@@ -143,27 +151,12 @@
       </el-aside>
       <el-main>
         <div class="form-group">
-            <label for="titleInput">文章标题</label>
-            <input type="text" name="title" class="form-control" id="title" placeholder="文章题目" required="">
+            <label for="titleInput">${Art.art_title}</label>
         </div>
-        <el-row :gutter="20">
-          <el-col :span="16">
-          <el-radio v-model="radio" label="2">动画</el-radio>
-          <el-radio v-model="radio" label="1">游戏</el-radio>
-          <el-radio v-model="radio" label="28">生活</el-radio>
-          <el-radio v-model="radio" label="3">影视</el-radio>
-          <el-radio v-model="radio" label="17">科技</el-radio>
-          <el-radio v-model="radio" label="41">笔记</el-radio>
-          <el-radio v-model="radio" label="16">小说</el-radio>
-          </el-col>
-          <el-col :span="8"></el-col>
-        </el-row>
         <div id="test-editor">
             <textarea style="display:none;" id="article">
             </textarea>
         </div>
-        <input id="art_pic" type="file" onchange="previewFile()"><br>
-        <img src="" style="height:150px;width:200px" alt="缩略图">
         <div style="text-align: center">
             <a type="button" class="btn btn-sm btn-primary"
                style="width: 120px; margin-bottom: 30px; margin-right: 20px">返回</a>

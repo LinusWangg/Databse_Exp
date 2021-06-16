@@ -63,10 +63,10 @@
             var option = {
             backgroundColor:'#dddd',
             visualMap: {
-                show: false,
+                show: true,
                 min: 0,
                 max: 10,
-                left: 'center',
+                left: 'right',
             },
             calendar: {
                 range: '2021'
@@ -75,6 +75,15 @@
                 type: 'heatmap',
                 coordinateSystem: 'calendar',
                 data: "",
+            },
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+              type: 'cross',
+              crossStyle: {
+                color: '#999'
+              }
+              },
             }
             };
             find = getQueryString("user_name");
@@ -147,11 +156,32 @@
                 that.submit(val);
             },
             handleCommand(command){
-              if(command == "delete"){
-                alert("delete");
+              if(command.substring(0,6) == "delete"){
+                var cont=prompt("请输入密码","");
+                if(cont!=null||cont!=""){
+                $.ajax({
+                url:"http://127.0.0.1:8000/article/deletemine",
+                type:"post",
+                data:JSON.stringify({
+                    user_name:"{{user_name|safe}}",
+                    user_pwd:cont,
+                    art_title:command.substring(6),
+                }),
+                dataType:"json",
+                success:function(result){
+                    if(result['data']['Allow']){
+                      alert("删除成功");
+                      location.reload();
+                    }
+                    else{
+                      alert("权限不足");
+                    }
+                }
+                })
               }
-              else if(command == "modify"){
-                alert("modify");
+              }
+              else if(command.substring(0,6) == "modify"){
+                window.location.replace("http://127.0.0.1:8000/article/modify?art_title="+command.substring(6));
               }
             }
         },
@@ -242,8 +272,8 @@
                         </span>
                         <el-dropdown-menu slot="dropdown">
                         <div id="elmenu"></div>
-                        <el-dropdown-item command="delete">删除</el-dropdown-item>
-                        <el-dropdown-item command="modify">修改</el-dropdown-item>
+                        <el-dropdown-item :command="'delete'+art.art_title">删除</el-dropdown-item>
+                        <el-dropdown-item :command="'modify'+art.art_title">修改</el-dropdown-item>
                         </el-dropdown-menu>
                         </el-dropdown>
                         </div>

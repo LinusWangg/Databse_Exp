@@ -32,4 +32,8 @@ urlpatterns = [
     path('getdate',views.getdate,name="getdate"),
     path('getauthorart',views.primary_data4,name="getauthorart"),
     path('timedata',views.timedata,name="timedata"),
+    path('deletemine',views.deletemyart,name="deletemine"),
+    path('modify',views.primary_data5,name="modify"),
+    path('modify_art',views.modifymyart,name="modify_art"),
+    path('imgupload',views.imgupload,name="imgupload"),
 ]

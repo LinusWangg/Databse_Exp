@@ -14,6 +14,10 @@ import os
 import treehole.settings as settings
 import datetime
 from user import views as usr_view
+from user.models import User
+import random
+from PIL import Image
+
 # Create your views here.
 def primary_data(request):
     data = {}
@@ -89,6 +93,21 @@ def primary_data4(request):
                     ]
     return render(request,'myart.html',data)
 
+def primary_data5(request):
+    data = {}
+    if(request.session.get('is_login',None)):
+        data['user_name'] = request.session['user_name']
+    else:
+        data['user_name'] = 'wywnb'
+    data['title'] = '南航树洞'
+    data['content'] = [{'head':'文章搜索','url':'http://127.0.0.1:8000/article'},
+                    {'head':'文章编写','url':'http://127.0.0.1:8000/article/write'},
+                    {'head':'我的主页','url':'http://127.0.0.1:8000/article/getauthorart'},
+                    {'head':'个人信息','url':'http://127.0.0.1:8000'},
+                    {'head':'报个BUG','url':'#'}
+                    ]
+    return render(request,'modify_art.html',data)
+
 def findbyarttitle(art_title):
     Art = Article.objects.raw("select * from article_article where art_title = %s",[art_title])
     if not Art:
@@ -106,11 +125,14 @@ def findbyauthor(art_author):
     return Articles
 
 def deletemine(art_title,user_name,user_pwd):
-    user = findUserbyname(user_name)
+    user = User.objects.filter(user_name=user_name).first()
     if(user.user_pwd != user_pwd):
         return False
     else:
-        Article.objects.raw("delete from article_article where art_title = %s",[art_title])
+        cur = connection.cursor()
+        cur.execute("delete from article_article where art_title = %s",[art_title])
+        cur.execute("delete from article_comment where art_title = %s",[art_title])
+        cur.close()
         return True
 
 def writearticle(request):
@@ -148,6 +170,62 @@ def deletemyart(request):
     data['Allow'] = deletemine(art_title,user_name,user_pwd)
     response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
     return JsonResponse(data=response,safe=False)
+
+def imgupload(request):
+    if request.method == "POST":
+        data = request.FILES['editormd-image-file']
+        img = Image.open(data)
+        width = img.width
+        height = img.height
+        rate = 1.0  # 压缩率
+
+        # 根据图像大小设置压缩率
+        if width >= 2000 or height >= 2000:
+            rate = 0.3
+        elif width >= 1000 or height >= 1000:
+            rate = 0.5
+        elif width >= 500 or height >= 500:
+            rate = 0.9
+
+        width = int(width * rate)  # 新的宽
+        height = int(height * rate)  # 新的高
+
+        img.thumbnail((width, height), Image.ANTIALIAS)  # 生成缩略图
+
+        url = 'blogimg/' + data.name
+        name = settings.MEDIA_ROOT + '/' + url
+        while os.path.exists(name):
+            file, ext = os.path.splitext(data.name)
+            file = file + str(random.randint(1, 1000))
+            data.name = file + ext
+            url = 'blogimg/' + data.name
+            name = settings.MEDIA_ROOT + '/' + url
+        try:
+            img.save(name)
+            url = 'http://127.0.0.1:8000/media'+name.split('media')[-1]
+            return JsonResponse({'success': 1, 'message': '成功', 'url': url})
+        except Exception as e:
+            return JsonResponse({'success': 0, 'message': '上传失败'})
+
+def modifymyart(request):
+    data = {}
+    post_data = request.body.decode("utf-8")
+    post_data = json.loads(post_data)
+    art_title = post_data.get("art_title")
+    art_content = post_data.get("art_content")
+    user_name = post_data.get('user_name')
+    user_pwd = post_data.get('user_pwd')
+    user_pwd = md5(user_pwd.encode('utf8')).hexdigest()
+    user = User.objects.filter(user_name=user_name).first()
+    if(user.user_pwd != user_pwd):
+        data['Allow'] = False
+    else:
+        cur = connection.cursor()
+        cur.execute("update article_article set art_content = %s where art_title = %s",[art_content,art_title])
+        cur.close()
+        data['Allow'] = True
+        response = wrap_json_response(data=data,code=ReturnCode.SUCCESS,message='Success!')
+        return JsonResponse(data=response,safe=False)
 
 def writecomment(request):
     data = {}
