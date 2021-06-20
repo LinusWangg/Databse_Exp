@@ -131,7 +131,6 @@ def deletemine(art_title,user_name,user_pwd):
     else:
         cur = connection.cursor()
         cur.execute("delete from article_article where art_title = %s",[art_title])
-        cur.execute("delete from article_comment where art_title = %s",[art_title])
         cur.close()
         return True
 
@@ -265,7 +264,7 @@ def search(request):
     page_from = 10*(page-1)
     page_to = 10*page
     # 分页
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_title like %s and art_time between %s and %s and art_type like %s limit %s,%s",[key_word,time_from,time_to,art_type,page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_title like %s and art_time between %s and %s and art_type like %s limit 20 offset %s",[key_word,time_from,time_to,art_type,page_from])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
@@ -287,7 +286,7 @@ def getmine(request):
     page_from = 10*(page-1)
     page_to = 10*page
     # 分页
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_author = %s limit %s,%s",[art_author,page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_author = %s limit %s,%s",[art_author,page_from,20])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
@@ -308,7 +307,7 @@ def getall(request):
     page_from = 10*(page-1)
     page_to = 10*page
     # 分页
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article limit %s,%s",[page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article limit 20 offset %s",[page_from])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
@@ -333,7 +332,7 @@ def getsum(request):
     page_from = 10*(page-1)
     page_to = 10*page
     cur = connection.cursor()
-    cur.execute("select art_author,count(*) from article_article group by art_author limit %s,%s",[page_from,page_to])
+    cur.execute("select art_author,count(*) from article_article group by art_author limit %s,%s",[page_from,20])
     Art_info_author = dictfetchall(cur)
     cur.close()
     
@@ -351,7 +350,7 @@ def getdate(request):
     page_to = 10*page
     time_from = post_data.get('time_from')
     time_to = post_data.get('time_to')
-    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_time between %s and %s limit %s,%s",[time_from,time_to,page_from,page_to])
+    arts = Article.objects.raw("select art_title,art_author,art_time,art_type,art_pic from article_article where art_time between %s and %s limit 20 offset %s",[time_from,time_to,page_from])
     arts = serializers.serialize("json",arts)
     arts = json.loads(arts)
     for x in arts:
